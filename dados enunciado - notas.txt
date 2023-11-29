@@ -1,0 +1,119 @@
+Objetivo: Criar uma plataforma de leilões
+
+Requere a implementação de:
+    - Auction Server (AS) (server por onde são abertos e fechados os leilões)
+    - User Application (User) (diversas intâncias de clientes que podem abrir e fechar leilões, listar todos os leilões e meter bids)
+
+Inicializar a plataforma de leilões (User application):
+    ./user [-n ASIP] [-p ASport]
+
+ASIP - o IP address da máquina onde o AS (auction server) opera. Se for omitido, AS deve estar a correr na mesma máquina
+ASport - o bem sabido port (TCP e UDP) onde o AS aceita pedidos. Se omitido, assume o valor 58000+GN (Group number)
+
+Inicializar o Auction Server (AS):
+    ./AS [-p ASport] [-v]
+
+ASport - o bem sabido port onde o AS server aceita pedidos, UDP e TCP. Se omitido, assume o valor 58000+GN (Group number)
+
+------------------- Elementos ------------------------------
+user:
+- UID, 6  digitos - número do IST
+- password, 8 alphanumericos (apenas letras e digitos).
+
+leilão:
+- descrição pequena (nome) - 10 caracteres alphanumericos
+- uma imagem (ou documento (document file)) do asset para venda
+        - Filenames (limitados a 24 caracteres alphanumericos)
+        - File Size (limitado a 10 MB representado em 8 digitos)
+- o valor inicial para começar a leiloar (até 6 digitos)
+- duração do leilão em segundos (até 5 digitos)
+- AID (3 digitos), caso seja aceite
+- valor mais alto de uma bid 
+- UID (user que colocou a bid mais alta)
+- UID (user que começou o leilão)
+
+Bid:
+- valor
+------------------------------------------------------------
+
+------------------ Ações Possíveis -------------------------
+
+A interface (permite a aplicação do User controlar as seguintes ações):
+ - Login: (the same user can register multiple times, mas defenindo uma nova password - todos os dados de um user são preservados, menos a password)
+    - Identificação do cliente. AS recebe o pedido para dar login  e informa se teve sucesso ou se foi uma tentativa incorreta. Caso seja um novo UID regista o cliente.
+    - command (user): login UID password (UDP protocol)    
+    - response (AS): successful login / incorrect login attempt / new user registered.
+
+ - Abrir um novo leilão:
+    - A aplicação de User manda uma mensagem ao AS a pedir para abrir um novo leilão.
+    - identificar o leilao com todos os requesitos
+    - AS informa se o pedido foi feito com sucesso, e devolve o identificador do leilão (AID) (3 digitos)
+    - command (user): open name asset_name start_value timeactive (TCP protocol)
+    - response (AS): request successful + AID (auction identifier) / request failed 
+
+- Fechar um leilão: 
+    - User manda uma mensagem ao AS a pedir para fechar um leilão atual começado por esse user (UID)
+    - AS responde se o pedido teve sucesso de duas formas:
+        - se já tinha acabado (tempo) - devolve que já tinha sido fechados
+        - se não, fecha e devolve que foi fechados
+        - command (user): close AID (TCP protocol)
+        - response (AS): successful closed (closing the auction) / auction time already ended
+
+- Listar todos os leilões começados por um user (myauctions):
+    - User pede ao AS para leitar os leilões começados por esse user.
+    - AS vai responder com a lista requerida, ou que o user não iniciou nenhum leilão
+    - command (user): myactions or maior (UDP protocol)
+    - response (AS): requested list / user not in any auctions
+
+- Listar todas as bids do user (mybids):
+    - User pede ao AS a listas dos leilões ao qual este meteu uma bid.
+    - AS responde com a lista requerida, ou que o user não meteu nenhuma bid em leilões atuais a correr.
+    - command (user): mybids or mb (UDP protocol)
+    - response (AS): requested list / user with no active bids
+
+- Listar todos os leilões:
+    - User pede ao AS para uma lista de todos os leilões.
+    - AS responde com a lista requerida, ou que nenhum leilão foi começado.
+    - command (user): list or leilao (UDP protocol)
+    - response (AS): requested list / no auction currently active
+
+- Mostar os assets:
+    - Num dado leilão:
+        - user pede para o AS enviar o ficheiro/inagem associado com o asset à venda.
+        - AS envia o ficheiro/imagem requerida, ou uma mensagem de erro.
+    - o ficheiro é guardado e todos os dados do ficheiro são dados ao user.
+    - command (user): show_asset AID or sa AID (TCP protocol)
+    - response (AS): requested file / error message
+
+- Bid:
+    - user pede ao AS para colocar uma bid, num dado leilão
+    - AS responde o resultado da bid: aceite, recusado (valor é inferior ao atual), ou que o leilão já não se encontra ativo
+    - command: bid AID value or b AID value (TCP protocol)
+    - response (AS): accepted / refused / auction no longer alive
+
+- Mostrar histórico:
+    - user pede ao AS o histórico de um leilão.
+    - AS responde com informação do leilão (nome, valor inicial, tempo inicial e duração), 
+        seguido da descrição das bids recebidas (maior bidder ID, valor e tempo da bid), 
+        e a indicação se o leilão já acabou e quando.
+    - command (user): show_record AID or sr AID
+    - response (AS): auction detais + list of received bids + already closed / currently active
+
+- Logout:
+    - user pede ao AS para terminar a interação (logout)
+    - command (user): logout (UDP protocol)
+    - response (AS): successful logout / unknown user / user not logged in
+
+- Desinscrever:
+    - user pede ao AS para se desinscrever
+    - command (user): unregister (UDP protocol)
+    - response (AS): successful unregister / unknown uer / incorrect unregister attempt
+
+- Exit / Sair:
+    - Cliente(user) pede para sair da User application. Se o cliente tiver logged in, a User application indica que o comando logout deve ser feito antes
+    - command (user): Exit - não envolve comunicação com o AS
+    - response (User Application) - se tiver logged in para dar logout primeiro, senão fecha a aplicação 
+
+------------------------------------------------------------
+
+
