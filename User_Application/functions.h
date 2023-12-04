@@ -1,8 +1,12 @@
 #ifndef _FUNTIONS_H_
 #define _FUNCTION_H_
 
+#define MAX_RESPONSE_SIZE 6010
+
 extern char *ASIP;
 extern int ASport;
+
+
 
 typedef struct user
 {
@@ -43,5 +47,9 @@ int logout(char *buffer);
 int unsubscribe(char *buffer);
 
 int exit_(char *buffer);
+
+int send_udp_request(char *request);
+
+int send_tcp_request(char *request);
 
 #endif
