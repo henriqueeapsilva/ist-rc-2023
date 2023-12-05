@@ -61,19 +61,15 @@ int send_udp_request(char *buffer){
 
     errcode=getaddrinfo(ASIP,ASport,&hints,&res);
     if(errcode!=0) exit(1);
-    
-    printf("%s\n", buffer);
 
     n=sendto(fd,buffer,strlen(buffer),0,res->ai_addr,res->ai_addrlen);
     if(n==-1) exit(1);
 
-    printf("%ld\n", n);
-
     addrlen = sizeof(addr);
 
-    ssize_t received = recv(fd, buffer, MAX_RESPONSE_SIZE, 0);
+    n=recvfrom(fd,buffer,MAX_RESPONSE_SIZE,0,(struct sockaddr*)&addr,&addrlen);
 
-    if(received==-1) exit(1);
+    if(n==-1) exit(1);
     buffer[n] = '\0';
 
     write(1,buffer,strlen(buffer));
