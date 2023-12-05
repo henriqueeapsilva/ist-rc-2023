@@ -29,37 +29,58 @@ int is_valid_password(const char *password) {
 
 // -------------------------------
 
+
+
+
+
+
+
 // ---- UDP and TCP functions ----
-int send_udp_request(char *request){
+void analyse_response_udp(char *buffer){
+
+
+}
+
+
+
+
+int send_udp_request(char *buffer){
     int fd, errcode;
     ssize_t n;
     socklen_t addrlen;
     struct addrinfo hints, *res;
     struct sockaddr_in addr;
-    char buffer[MAX_RESPONSE_SIZE];
 
-    fd=socket(AF_INET,SOCK_DGRAM,0);
-    if(fd==-1)return 1;
+    fd = socket(AF_INET, SOCK_DGRAM, 0); 
+    if (fd == -1) exit(1);
 
-    memset(&hints,0,sizeof hints);
-    hints.ai_family=AF_INET;
-    hints.ai_socktype=SOCK_DGRAM;
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET; 
+    hints.ai_socktype = SOCK_DGRAM; 
     
+
     errcode=getaddrinfo(ASIP,ASport,&hints,&res);
-    if(errcode!=0) return 1;
+    if(errcode!=0) exit(1);
     
-    n=sendto(fd,request,strlen(request),0,res->ai_addr,res->ai_addrlen);
-    if(n==-1) return 1;
+    printf("%s\n", buffer);
 
+    n=sendto(fd,buffer,strlen(buffer),0,res->ai_addr,res->ai_addrlen);
+    if(n==-1) exit(1);
 
-    addrlen=sizeof(addr);
-    n=recvfrom(fd,buffer,MAX_RESPONSE_SIZE,0,(struct sockaddr*)&addr,&addrlen);
-    if(n==-1)return 1;
+    printf("%ld\n", n);
 
-    write(1,buffer,n);
-    close(fd);
+    addrlen = sizeof(addr);
+
+    ssize_t received = recv(fd, buffer, MAX_RESPONSE_SIZE, 0);
+
+    if(received==-1) exit(1);
+    buffer[n] = '\0';
+
+    write(1,buffer,strlen(buffer));
 
     freeaddrinfo(res);
+
+    close(fd);
 
     return 0;
 }
@@ -75,7 +96,6 @@ int send_tcp_request(char *request){
 int login(char *buffer){
     int UID, response;
     char password[9];  // 8 characters for the password + 1 for null-terminator
-    char message[MAX_RESPONSE_SIZE];
 
     // Parse UID and password from the buffer
     if (sscanf(buffer, "%*s %d %8s", &UID, password) != 2) {
@@ -94,10 +114,9 @@ int login(char *buffer){
         return 0;
     }
 
-    // Create the message in the specified format
-    sprintf(message, "LIN %d %s\n", UID, password);
+    sprintf(buffer, "LIN %d %s\n", UID, password);
 
-    response = send_udp_request(message);
+    response = send_udp_request(buffer);
 
     return response;
 }
