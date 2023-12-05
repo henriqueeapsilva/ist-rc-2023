@@ -4,7 +4,7 @@
 #define MAX_RESPONSE_SIZE 6010
 
 extern char *ASIP;
-extern int ASport;
+extern char *ASport;
 
 
 
