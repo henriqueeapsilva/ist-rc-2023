@@ -1,6 +1,7 @@
 #include "functions.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <ctype.h>
 #include <sys/types.h>
@@ -8,6 +9,8 @@
 #include <netdb.h> 
 #include <string.h>
 
+bool loggedIn = false; // 0 - logged In, 1 - Not logged In
+User client;
 
 
 // ------- check functions -------
@@ -74,6 +77,9 @@ int send_udp_request(char *buffer){
 
     write(1,buffer,strlen(buffer));
 
+    // analyse udp response
+    // updates loggedIn variable
+    
     freeaddrinfo(res);
 
     close(fd);
@@ -111,9 +117,16 @@ int login(char *buffer){
     }
 
     sprintf(buffer, "LIN %d %s\n", UID, password);
-
+    
     response = send_udp_request(buffer);
+    
+    printf("1\n");
 
+    if(response == 0){
+        client._UID = UID;
+        strcpy(client._password, password);
+        loggedIn = true;
+    }
     return response;
 }
 
@@ -150,15 +163,50 @@ int show_record(char *buffer){
 }
 
 int logout(char *buffer){
-    return 0;
+    int response;
+
+    if(!loggedIn){
+        sprintf(buffer, "No client logged in.\n");
+        write(1,buffer,strlen(buffer));
+        return 1;
+    }
+
+    sprintf(buffer, "LOU %d %s\n", client._UID, client._password);
+
+    response = send_udp_request(buffer);
+
+    if(response == 0){
+        loggedIn = false;
+    }
+
+    return response;
+
 }
 
-int unsubscribe(char *buffer){
-    return 0;
+int unregister(char *buffer){
+    int response;
+
+    if(!loggedIn){
+        sprintf(buffer, "No client logged in.\n");
+        write(1,buffer,strlen(buffer));
+        return 1;
+    }
+
+    sprintf(buffer, "UNR %d %s\n", client._UID, client._password);
+
+    response = send_udp_request(buffer);
+
+    return response;
 }
 
 int exit_(char *buffer){
-    return 0;
+    if(loggedIn){
+        sprintf(buffer, "Please, logout first.\n");
+        write(1,buffer,strlen(buffer));
+        return 1;
+    } 
+
+    exit(EXIT_SUCCESS);
 }
 
 // -------------------------------
@@ -183,7 +231,7 @@ CommandEntry commandTable[] = {
     {"show_record", show_record},
     {"sr", show_record},
     {"logout", logout},
-    {"unsubscribe", unsubscribe},
+    {"unregister", unregister},
     {"exit", exit_},
     {NULL, NULL} // End of table marker
 };

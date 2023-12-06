@@ -16,7 +16,7 @@ char *INITIAL = "commands:\n login [UID] [password]\n open [name] [asset_name] [
 
 int main(int argc, char **argv){
 
-    int opt;
+    int opt, response;
     char buffer[MAX_RESPONSE_SIZE];
     char command[20];
 
@@ -41,6 +41,10 @@ int main(int argc, char **argv){
         // access the command to execute
         sscanf(buffer, "%s", command);
         //executes the command
-        executeCommand(command, buffer);
+        response = executeCommand(command, buffer);
+
+        if(response == 0)
+            printf("successful\n");
+        else printf("failure\n");
     }
 }

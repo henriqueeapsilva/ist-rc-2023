@@ -6,12 +6,10 @@
 extern char *ASIP;
 extern char *ASport;
 
-
-
 typedef struct user
 {
-    int UID;
-    char* password;
+    int _UID;
+    char _password[9];
 }User;
 
 typedef int (*CommandFunction)();
@@ -44,7 +42,7 @@ int show_record(char *buffer);
 
 int logout(char *buffer);
 
-int unsubscribe(char *buffer);
+int unregister(char *buffer);
 
 int exit_(char *buffer);
 
