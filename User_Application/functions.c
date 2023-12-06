@@ -1,4 +1,5 @@
 #include "functions.h"
+#include "../protocol/protocol.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -32,67 +33,6 @@ int is_valid_password(const char *password) {
 
 // -------------------------------
 
-
-
-
-
-
-
-// ---- UDP and TCP functions ----
-void analyse_response_udp(char *buffer){
-
-
-}
-
-
-
-
-int send_udp_request(char *buffer){
-    int fd, errcode;
-    ssize_t n;
-    socklen_t addrlen;
-    struct addrinfo hints, *res;
-    struct sockaddr_in addr;
-
-    fd = socket(AF_INET, SOCK_DGRAM, 0); 
-    if (fd == -1) exit(1);
-
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET; 
-    hints.ai_socktype = SOCK_DGRAM; 
-    
-
-    errcode=getaddrinfo(ASIP,ASport,&hints,&res);
-    if(errcode!=0) exit(1);
-
-    n=sendto(fd,buffer,strlen(buffer),0,res->ai_addr,res->ai_addrlen);
-    if(n==-1) exit(1);
-
-    addrlen = sizeof(addr);
-
-    n=recvfrom(fd,buffer,MAX_RESPONSE_SIZE,0,(struct sockaddr*)&addr,&addrlen);
-
-    if(n==-1) exit(1);
-    buffer[n] = '\0';
-
-    write(1,buffer,strlen(buffer));
-
-    // analyse udp response
-    // updates loggedIn variable
-    
-    freeaddrinfo(res);
-
-    close(fd);
-
-    return 0;
-}
-
-int send_tcp_request(char *request){
-    return 0;
-}
-
-// -------------------------------
-
 // ---- User command functions ---
 
 int login(char *buffer){
@@ -120,8 +60,6 @@ int login(char *buffer){
     
     response = send_udp_request(buffer);
     
-    printf("1\n");
-
     if(response == 0){
         client._UID = UID;
         strcpy(client._password, password);
@@ -165,8 +103,8 @@ int show_record(char *buffer){
 int logout(char *buffer){
     int response;
 
-    if(!loggedIn){
-        sprintf(buffer, "No client logged in.\n");
+    if(loggedIn == 1){
+        sprintf(buffer, "user not logged in\n");
         write(1,buffer,strlen(buffer));
         return 1;
     }
@@ -175,8 +113,9 @@ int logout(char *buffer){
 
     response = send_udp_request(buffer);
 
-    if(response == 0){
+    if(response == 1){
         loggedIn = false;
+        return 0;
     }
 
     return response;
@@ -186,8 +125,8 @@ int logout(char *buffer){
 int unregister(char *buffer){
     int response;
 
-    if(!loggedIn){
-        sprintf(buffer, "No client logged in.\n");
+    if(loggedIn == 1){
+        sprintf(buffer, "user not logged in\n");
         write(1,buffer,strlen(buffer));
         return 1;
     }
@@ -195,12 +134,16 @@ int unregister(char *buffer){
     sprintf(buffer, "UNR %d %s\n", client._UID, client._password);
 
     response = send_udp_request(buffer);
+     if(response == 1){
+        loggedIn = false;
+        return 0;
+    }
 
     return response;
 }
 
 int exit_(char *buffer){
-    if(loggedIn){
+    if(loggedIn == 0){
         sprintf(buffer, "Please, logout first.\n");
         write(1,buffer,strlen(buffer));
         return 1;

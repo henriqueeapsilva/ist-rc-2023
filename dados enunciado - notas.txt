@@ -96,7 +96,7 @@ A interface (permite a aplicação do User controlar as seguintes ações):
     - AS responde com informação do leilão (nome, valor inicial, tempo inicial e duração), 
         seguido da descrição das bids recebidas (maior bidder ID, valor e tempo da bid), 
         e a indicação se o leilão já acabou e quando.
-    - command (user): show_record AID or sr AID
+    - command (user): show_record AID or sr AID (UDP)
     - response (AS): auction detais + list of received bids + already closed / currently active
 
 - Logout:
