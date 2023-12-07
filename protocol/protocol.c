@@ -15,25 +15,155 @@ int UID = 0;
 int AID = 0;
 
 // -------------  handler functions  -------------
-void handle_ma(char *buffer){
+void handle_myauctions(char *response) {
+    // Example RMA_OK response: "RMA OK 1 1 2 0 3 1"
+    
+    // Initialize variables to store auction ID and state
+    int AID, state;
+    char status[4];
 
+    sscanf(response, "%*s %s", status);
+
+    // Initialize a buffer to store the display string
+    char display_buffer[MAX_RESPONSE_SIZE];
+    display_buffer[0] = '\0';  // Ensure the buffer is initially empty
+
+    // Iterate through the remaining pairs of AID and state
+    while (sscanf(response, "%03d %d", &AID, &state) == 2) {
+        // Read the AID
+        sprintf(display_buffer + strlen(display_buffer), "%d  %d\n", AID, state);
+
+        // Move to the next pair in the response
+        response = strchr(response, ' ');  
+        if (response == NULL) {
+            break;  // Exit the loop if there are no more pairs
+        }
+        response++;  // Move past the space
+    }
+
+    // Update the response variable with the generated string
+    strcpy(response, display_buffer);
 }
 
-void handle_mb(char *buffer){
 
-}   
+void handle_mybids(char *response) {
+    // Example RMB_OK response: "RMB OK 1 1 2 0 3 1"
+    
+    // Initialize variables to store auction ID and state
+    int AID, state;
+    char status[4];
 
-void handle_list(char *buffer){
+    sscanf(response, "%*s %s", status);
 
+    // Initialize a buffer to store the display string
+    char display_buffer[MAX_RESPONSE_SIZE];
+    display_buffer[0] = '\0';  // Ensure the buffer is initially empty
+
+    // Iterate through the pairs of AID and state
+    while (sscanf(response, "%d %d", &AID, &state) == 2) {
+        // Read the AID and state
+        sprintf(display_buffer + strlen(display_buffer), "%d  %d\n", AID, state);
+
+        // Move to the next pair in the response
+        response = strchr(response, ' ');  
+        if (response == NULL) {
+            break;  // Exit the loop if there are no more pairs
+        }
+        response++;  // Move past the space
+    }
+
+    // Update the response variable with the generated string
+    strcpy(response, display_buffer);
 }
 
-void handle_sr(char *buffer){
 
+void handle_list(char *response) {
+    // Example RLS_OK response: "RLS OK 1 1 2 0 3 1"
+    
+    // Initialize variables to store auction ID and state
+    int AID, state;
+    char status[4];
 
+    sscanf(response, "%*s %s", status);
+
+    // Initialize a buffer to store the display string
+    char display_buffer[MAX_RESPONSE_SIZE];
+    display_buffer[0] = '\0';  // Ensure the buffer is initially empty
+
+    // Iterate through the pairs of AID and state
+    while (sscanf(response, "%d %d", &AID, &state) == 2) {
+        // Read the AID and state
+        sprintf(display_buffer + strlen(display_buffer), "%d  %d\n", AID, state);
+
+        // Move to the next pair in the response
+        response = strchr(response, ' ');  
+        if (response == NULL) {
+            break;  // Exit the loop if there are no more pairs
+        }
+        response++;  // Move past the space
+    }
+
+    // Update the response variable with the generated string
+    strcpy(response, display_buffer);
 }
 
+void handle_show_record(char *response) {
+    // Example RRC_OK response:
+    // "RRC OK 100 1 ArtAuction artwork.jpg 5000 2023-12-06 12:00:00 3600
+    // B 101 6000 2023-12-06 12:05:00 300 E 2023-12-06 13:00:00 3600"
+    
+    // Initialize variables to store auction details
+    int host_UID, bidder_UID, start_value, bid_value, timeactive, bid_sec_time, end_sec_time;
+    char auction_name[256], asset_fname[256], start_date_time[20], bid_date_time[20], end_date_time[20];
+    char status[4];
+
+    sscanf(response, "%*s %s", status);
+
+    // Read the auction details
+    sscanf(response, "%*s %*s %d %d %s %s %d %s %d", &host_UID, &bidder_UID, auction_name, asset_fname, &start_value, start_date_time, &timeactive);
+
+    // Initialize a buffer to store the display string
+    char display_buffer[MAX_RESPONSE_SIZE];
+    display_buffer[0] = '\0';  // Ensure the buffer is initially empty
+
+    // Add auction details to the display string
+    sprintf(display_buffer, "Auction Details:\nHost UID: %d\nAuction Name: %s\nAsset Filename: %s\nStart Value: %d\nStart Date-Time: %s\nTime Active: %d seconds\n\n", host_UID, auction_name, asset_fname, start_value, start_date_time, timeactive);
+
+    // Move to the bids section of the response
+    response = strchr(response, 'B');
+    if (response == NULL) {
+        // No bids present, print the auction details and return
+        strcpy(response, display_buffer);
+        return;
+    }
+
+    // Iterate through the bids
+    while (sscanf(response, "B %d %d %s %d", &bidder_UID, &bid_value, bid_date_time, &bid_sec_time) == 4) {
+        // Add bid details to the display string
+        sprintf(display_buffer + strlen(display_buffer), "Bidder UID: %d\nBid Value: %d\nBid Date-Time: %s\nBid Sec Time: %d seconds\n\n", bidder_UID, bid_value, bid_date_time, bid_sec_time);
+
+        // Move to the next bid in the response
+        response = strchr(response, 'B');
+        if (response == NULL) {
+            break;  // Exit the loop if there are no more bids
+        }
+    }
+
+    // Check if the auction is closed
+    if (sscanf(response, "E %s %d", end_date_time, &end_sec_time) == 2) {
+        // Add closing details to the display string
+        sprintf(display_buffer + strlen(display_buffer), "Auction Closed:\nEnd Date-Time: %s\nEnd Sec Time: %d seconds\n", end_date_time, end_sec_time);
+    }
+
+    strcpy(response, display_buffer);
+}
+
+void handle_show_asset(char *buffer){
+
+}
 
 // ----------------------------------------------
+
 
 // ---------------- UDP Functions ----------------
 

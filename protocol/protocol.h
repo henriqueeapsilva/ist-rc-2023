@@ -1,13 +1,16 @@
 #ifndef _PROTOCOL_H_
 #define _PROTOCOL_H_
 
-void handle_ma(char *buffer);
+void handle_myauctions(char *buffer);
 
-void handle_mb(char *buffer);
+void handle_mybids(char *buffer);
 
 void handle_list(char *buffer);
 
-void handle_sr(char *buffer);
+void handle_show_record(char *buffer);
+
+void handle_show_asset(char *buffer);
+
 
 int send_udp_request(char *request);
 
