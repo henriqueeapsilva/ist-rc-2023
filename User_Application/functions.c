@@ -77,16 +77,34 @@ int close_(char *buffer){
     return 0;
 }
 
-int myauctions(char *buffer){
-    return 0;
+int myauctions(char *buffer) {
+    int response;
+
+    sprintf(buffer, "LMA %d\n", client._UID);
+
+    response = send_udp_request(buffer);
+
+    return response;
 }
 
-int mybids(char *buffer){
-    return 0;
+int mybids(char *buffer) {
+    int response;
+
+    sprintf(buffer, "LMB %d\n", client._UID);
+
+    response = send_udp_request(buffer);
+
+    return response;
 }
 
-int list(char *buffer){
-    return 0;
+int list(char *buffer) {
+    int response;
+
+    sprintf(buffer, "LST\n");
+
+    response = send_udp_request(buffer);
+
+    return response;
 }
 
 int show_asset(char *buffer){
@@ -97,8 +115,22 @@ int bid(char *buffer){
     return 0;
 }
 
-int show_record(char *buffer){
-    return 0;
+int show_record(char *buffer) {
+    int response, AID;
+
+    // Parse AID from the buffer
+    if (sscanf(buffer, "%*s %d", &AID) != 1) {
+        printf("Invalid input format\n");
+        return 0;
+    }
+
+    // Create the protocol message
+    sprintf(buffer, "SRC %d\n", AID);
+
+    // Send UDP request
+    response = send_udp_request(buffer);
+
+    return response;
 }
 
 

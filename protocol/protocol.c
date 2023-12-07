@@ -14,6 +14,27 @@
 int UID = 0;
 int AID = 0;
 
+// -------------  handler functions  -------------
+void handle_ma(char *buffer){
+
+}
+
+void handle_mb(char *buffer){
+
+}   
+
+void handle_list(char *buffer){
+
+}
+
+void handle_sr(char *buffer){
+
+
+}
+
+
+// ----------------------------------------------
+
 // ---------------- UDP Functions ----------------
 
 void analyse_udp_response(char *response, int *loggedIn) {
@@ -38,7 +59,7 @@ void analyse_udp_response(char *response, int *loggedIn) {
             strcpy(response, Responses.RLI_REG());
             *loggedIn = 0;
         } else {
-            strcpy(response, "Unknown Status");
+            strcpy(response, "ERR");
         }
         return;
     } else if (strcmp(msg_type, "RLO") == 0) {
@@ -50,7 +71,7 @@ void analyse_udp_response(char *response, int *loggedIn) {
         } else if (strcmp(status, "UNR") == 0) {
             strcpy(response, Responses.RLO_UNR());
         } else {
-            strcpy(response, "Unknown Status");
+            strcpy(response, "ERR");
         }
         return;
     } else if (strcmp(msg_type, "RUR") == 0) {
@@ -62,7 +83,7 @@ void analyse_udp_response(char *response, int *loggedIn) {
         } else if (strcmp(status, "UNR") == 0) {
             strcpy(response, Responses.RUR_UNR());
         } else {
-            strcpy(response, "Unknown Status");
+            strcpy(response, "ERR");
         }
         return;
     } else if (strcmp(msg_type, "RMA") == 0) {
@@ -75,7 +96,7 @@ void analyse_udp_response(char *response, int *loggedIn) {
         } else if (strcmp(status, "NLG") == 0) {
             strcpy(response, Responses.RMA_NLG());
         } else {
-            strcpy(response, "Unknown Status");
+            strcpy(response, "ERR");
         }
         return;
     } else if (strcmp(msg_type, "RMB") == 0) {
@@ -88,7 +109,7 @@ void analyse_udp_response(char *response, int *loggedIn) {
         } else if (strcmp(status, "NLG") == 0) {
             strcpy(response, Responses.RMA_NLG());
         } else {
-            strcpy(response, "Unknown Status");
+            strcpy(response, "ERR");
         }
         return;
     } else if (strcmp(msg_type, "RLS") == 0) {
@@ -99,7 +120,7 @@ void analyse_udp_response(char *response, int *loggedIn) {
         } else if (strcmp(status, "NOK") == 0) {
             strcpy(response, Responses.RLS_NOK());
         } else {
-            strcpy(response, "Unknown Status");
+            strcpy(response, "ERR");
         }
         return;
     } else if (strcmp(msg_type, "RRC") == 0) {
@@ -110,11 +131,11 @@ void analyse_udp_response(char *response, int *loggedIn) {
         } else if (strcmp(status, "NOK") == 0) {
             strcpy(response, Responses.RRC_NOK());
         } else {
-            strcpy(response, "Unknown Status");
+            strcpy(response, "ERR");
         }
         return;
     } else {
-        strcpy(response, "Unknown Message Type");
+        strcpy(response, "ERR");
     }
 }
 
@@ -175,24 +196,26 @@ void analyse_tcp_response(char *response, int *loggedIn) {
     // Use the ResponseMessages structure to get the appropriate status message
     if (strcmp(msg_type, "ROA") == 0) {
         if (strcmp(status, "NOK") == 0) {
-            printf("%s\n", Responses.ROA_NOK());
+            strcpy(response, Responses.ROA_NOK());
         } else if (strcmp(status, "NLG") == 0) {
-            printf("%s\n", Responses.ROA_NLG());
+            strcpy(response, Responses.ROA_NLG());
+        } else {
+            strcpy(response, "ERR");
         }
         return;
     } else if (strcmp(msg_type, "RCL") == 0) {
         if (strcmp(status, "OK") == 0) {
-            printf("%s\n", Responses.RCL_OK());
+            strcpy(response, Responses.RCL_OK());
         } else if (strcmp(status, "NOK") == 0) {
-            printf("%s\n", Responses.RCL_NOK(UID));
+            strcpy(response, Responses.RCL_NOK(UID));
         } else if (strcmp(status, "NLG") == 0) {
-            printf("%s\n", Responses.RCL_NLG());
+            strcpy(response, Responses.RCL_NLG());
         } else if (strcmp(status, "EAU") == 0) {
-            printf("%s\n", Responses.RCL_EAU(AID));
+            strcpy(response, Responses.RCL_EAU(AID));
         } else if (strcmp(status, "EOW") == 0) {
-            printf("%s\n", Responses.RCL_EOW(UID));
+            strcpy(response, Responses.RCL_EOW(UID));
         } else if (strcmp(status, "END") == 0) {
-            printf("%s\n", Responses.RCL_END(AID,UID));
+            strcpy(response, Responses.RCL_END(AID,UID));
         }
         return;
     } else if (strcmp(msg_type, "SAS") == 0) {
@@ -200,7 +223,7 @@ void analyse_tcp_response(char *response, int *loggedIn) {
         return;
     } else if (strcmp(msg_type, "RSA") == 0) {
         if (strcmp(status, "NOK") == 0) {
-            printf("%s\n", Responses.RSA_NOK());
+            strcpy(response, Responses.RSA_NOK());
         } else {
             // Handle RSA messages (not specified in the original responses, adjust accordingly)
         }
@@ -210,21 +233,22 @@ void analyse_tcp_response(char *response, int *loggedIn) {
         return;
     } else if (strcmp(msg_type, "RBD") == 0) {
         if (strcmp(status, "NOK") == 0) {
-            printf("%s\n", Responses.RBD_NOK(AID));
+            strcpy(response, Responses.RBD_NOK(AID));
         } else if (strcmp(status, "NLG") == 0) {
-            printf("%s\n", Responses.RBD_NLG());
+            strcpy(response, Responses.RBD_NLG());
         } else if (strcmp(status, "ACC") == 0) {
-            printf("%s\n", Responses.RBD_ACC(AID));
+            strcpy(response, Responses.RBD_ACC(AID));
         } else if (strcmp(status, "REF") == 0) {
-            printf("%s\n", Responses.RBD_REF());
+            strcpy(response, Responses.RBD_REF());
         } else if (strcmp(status, "ILG") == 0) {
-            printf("%s\n", Responses.RBD_ILG());
+            strcpy(response, Responses.RBD_ILG());
         }
         return;
     } else {
-        printf("Unknown Message Type\n");
+        strcpy(response, "ERR");
     }
 }
+
 
 
 
@@ -233,4 +257,3 @@ int send_tcp_request(char *request){ // check the UID and AID if necessary and s
 }
 
 // ----------------------------------------------
-
