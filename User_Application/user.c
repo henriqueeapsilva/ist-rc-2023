@@ -44,7 +44,7 @@ int main(int argc, char **argv){
         response = executeCommand(command, buffer);
 
         if(response == 0)
-            printf("successful\n");
-        else printf("failure\n");
+            printf("\n---- successful---- \n\n");
+        else printf("\n---- failure---- \n\n");
     }
 }

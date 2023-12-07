@@ -10,7 +10,7 @@
 #include <netdb.h> 
 #include <string.h>
 
-bool loggedIn = false; // 0 - logged In, 1 - Not logged In
+bool loggedIn = false; // 1 - logged In (true), 0 - Not logged In (false)
 User client;
 
 
@@ -60,11 +60,12 @@ int login(char *buffer){
     
     response = send_udp_request(buffer);
     
-    if(response == 0){
+    if(response == 0){ // updates the client (logged in)
         client._UID = UID;
         strcpy(client._password, password);
         loggedIn = true;
     }
+
     return response;
 }
 
@@ -100,10 +101,11 @@ int show_record(char *buffer){
     return 0;
 }
 
+
 int logout(char *buffer){
     int response;
 
-    if(loggedIn == 1){
+    if(loggedIn == 0){
         sprintf(buffer, "user not logged in\n");
         write(1,buffer,strlen(buffer));
         return 1;
@@ -113,7 +115,7 @@ int logout(char *buffer){
 
     response = send_udp_request(buffer);
 
-    if(response == 1){
+    if(response == 1){ // updates the status of the client
         loggedIn = false;
         return 0;
     }
@@ -125,7 +127,7 @@ int logout(char *buffer){
 int unregister(char *buffer){
     int response;
 
-    if(loggedIn == 1){
+    if(loggedIn == 0){
         sprintf(buffer, "user not logged in\n");
         write(1,buffer,strlen(buffer));
         return 1;
@@ -134,7 +136,7 @@ int unregister(char *buffer){
     sprintf(buffer, "UNR %d %s\n", client._UID, client._password);
 
     response = send_udp_request(buffer);
-     if(response == 1){
+     if(response == 1){ //updates the status of the client
         loggedIn = false;
         return 0;
     }
@@ -143,7 +145,7 @@ int unregister(char *buffer){
 }
 
 int exit_(char *buffer){
-    if(loggedIn == 0){
+    if(loggedIn == 1){ // checks if the client is still logged in
         sprintf(buffer, "Please, logout first.\n");
         write(1,buffer,strlen(buffer));
         return 1;
