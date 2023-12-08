@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <netdb.h> 
 #include <string.h>
+#include <sys/sendfile.h>
 
 bool loggedIn = false; // 1 - logged In (true), 0 - Not logged In (false)
 User client;
@@ -70,11 +71,75 @@ int login(char *buffer){
 }
 
 int open_(char *buffer){
+
+    int start_value, timeactive, fsize;
+    char name[50], asset_fname[200];
+
+    if (sscanf(buffer, "%*s %s %s %d %d", name, asset_fname, &start_value, &timeactive) != 4) {
+        printf("Invalid input format\n");
+        return 0;
+    }
+
+    FILE *file = fopen(asset_fname, "r");
+    
+    if (file == NULL) {
+        printf("Invalid file name\n");
+        return 0;
+    }
+
+    // get file size
+    fseek(file, 0L, SEEK_END);
+    fsize = ftell(file);
+    fseek(file, 0L, SEEK_SET);
+
+    int fd1 = fileno(file);
+
+    struct addrinfo hints,*res;
+    int fd,n,errcode;
+    fd=socket(AF_INET,SOCK_STREAM,0); //TCP socket
+    if (fd==-1) exit(1); //error
+    memset(&hints,0,sizeof hints);
+    hints.ai_family=AF_INET; //IPv4
+    hints.ai_socktype=SOCK_STREAM; //TCP socket
+
+    errcode=getaddrinfo(ASIP,ASport,&hints,&res);
+    if(errcode!=0)/*error*/exit(1);
+
+    n=connect(fd,res->ai_addr,res->ai_addrlen);
+    if(n==-1)/*error*/exit(1);
+
+    sprintf(buffer, "OPA %d %s %s %d %d %s %d ", client._UID, client._password, name, start_value, timeactive, asset_fname, fsize);
+
+    n=write(fd,buffer,strlen(buffer));
+    if(n==-1)/*error*/exit(1);
+
+    n=sendfile(fd, fd1, NULL, fsize);
+    if(n==-1)/*error*/exit(1);
+
+    n=write(fd,"\n",1);
+    if(n==-1)/*error*/exit(1);
+
+    n=read(fd,buffer,128);
+    if(n==-1)/*error*/exit(1);
+    buffer[n] = '\0';
+
+    printf("Response: %s\n",buffer);
+
+    freeaddrinfo(res);
+    close(fd);
+    fclose(file);
     return 0;
 }
 
 int close_(char *buffer){
-    return 0;
+    int response, AID;
+    if (sscanf(buffer, "%*s %d", &AID) != 1) {
+        printf("Invalid input format\n");
+        return 0;
+    }
+    sprintf(buffer, "CLS %d %s %d\n", client._UID, client._password, AID);
+    response = send_tcp_request(buffer);
+    return response;
 }
 
 int myauctions(char *buffer) {

@@ -218,8 +218,7 @@ void analyse_udp_response(char *response, int *loggedIn) {
         return;
     } else if (strcmp(msg_type, "RMA") == 0) {
         if (strcmp(status, "OK") == 0) {
-            // Handle the case where the response should be added to the list of auctions
-            // For now, just return
+            handle_myauctions(response);
             return;
         } else if (strcmp(status, "NOK") == 0) {
             strcpy(response, Responses.RMA_NOK());
@@ -231,8 +230,7 @@ void analyse_udp_response(char *response, int *loggedIn) {
         return;
     } else if (strcmp(msg_type, "RMB") == 0) {
         if (strcmp(status, "OK") == 0) {
-            // Handle the case where the response should be added to the list of bids
-            // For now, just return
+            handle_mybids(response);
             return;
         } else if (strcmp(status, "NOK") == 0) {
             strcpy(response, Responses.RMB_NOK());
@@ -244,8 +242,7 @@ void analyse_udp_response(char *response, int *loggedIn) {
         return;
     } else if (strcmp(msg_type, "RLS") == 0) {
         if (strcmp(status, "OK") == 0) {
-            // Handle the case where the response should be added to the list of auctions
-            // For now, just return
+            handle_list(response);
             return;
         } else if (strcmp(status, "NOK") == 0) {
             strcpy(response, Responses.RLS_NOK());
@@ -255,8 +252,7 @@ void analyse_udp_response(char *response, int *loggedIn) {
         return;
     } else if (strcmp(msg_type, "RRC") == 0) {
         if (strcmp(status, "OK") == 0) {
-            // Handle the case where the response should be added to the user's stats
-            // For now, just return
+            handle_show_record(response);
             return;
         } else if (strcmp(status, "NOK") == 0) {
             strcpy(response, Responses.RRC_NOK());
@@ -348,18 +344,10 @@ void analyse_tcp_response(char *response, int *loggedIn) {
             strcpy(response, Responses.RCL_END(AID,UID));
         }
         return;
-    } else if (strcmp(msg_type, "SAS") == 0) {
-        // Handle SAS messages (not specified in the original responses, adjust accordingly)
-        return;
     } else if (strcmp(msg_type, "RSA") == 0) {
         if (strcmp(status, "NOK") == 0) {
             strcpy(response, Responses.RSA_NOK());
-        } else {
-            // Handle RSA messages (not specified in the original responses, adjust accordingly)
-        }
-        return;
-    } else if (strcmp(msg_type, "BID") == 0) {
-        // Handle BID messages (not specified in the original responses, adjust accordingly)
+        } 
         return;
     } else if (strcmp(msg_type, "RBD") == 0) {
         if (strcmp(status, "NOK") == 0) {
@@ -379,10 +367,25 @@ void analyse_tcp_response(char *response, int *loggedIn) {
     }
 }
 
-
-
-
-int send_tcp_request(char *request){ // check the UID and AID if necessary and save it, then put it to 0 if not necessary
+int send_tcp_request(char *buffer){
+    struct addrinfo hints,*res;
+    int fd,n,errcode;
+    fd=socket(AF_INET,SOCK_STREAM,0); //TCP socket
+    if (fd==-1) exit(1); //error
+    memset(&hints,0,sizeof hints);
+    hints.ai_family=AF_INET; //IPv4
+    hints.ai_socktype=SOCK_STREAM; //TCP socket
+    errcode=getaddrinfo(ASIP,ASport,&hints,&res);
+    if(errcode!=0)/*error*/exit(1);
+    n=connect(fd,res->ai_addr,res->ai_addrlen);
+    if(n==-1)/*error*/exit(1);
+    n=write(fd,buffer,strlen(buffer));
+    if(n==-1)/*error*/exit(1);
+    n=read(fd,buffer,128);
+    if(n==-1)/*error*/exit(1);
+    printf("Response: %s\n",buffer);
+    freeaddrinfo(res);
+    close(fd);
     return 0;
 }
 
