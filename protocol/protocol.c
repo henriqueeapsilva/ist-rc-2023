@@ -10,9 +10,12 @@
 #include <sys/socket.h>
 #include <netdb.h> 
 #include <string.h>
+#include <sys/sendfile.h>
+#include <stdbool.h>
+#include <fcntl.h>
 
 int UID = 0;
-int AID = 0;
+char *AID[3];
 
 // -------------  handler functions  -------------
 void handle_myauctions(char *response) {
@@ -320,8 +323,14 @@ void analyse_tcp_response(char *response, int *loggedIn) {
     sscanf(response, "%*s %s", status);
 
     // Use the ResponseMessages structure to get the appropriate status message
+    fflush(stdout);
     if (strcmp(msg_type, "ROA") == 0) {
-        if (strcmp(status, "NOK") == 0) {
+        if (strcmp(status, "OK") == 0) {
+            sscanf(response, "%*s %*s %s", AID);
+            printf("cheguei aqui %s\n", AID);
+            strcpy(response, Responses.ROA_OK(AID));
+            fflush(stdout);
+        }else if (strcmp(status, "NOK") == 0) {
             strcpy(response, Responses.ROA_NOK());
         } else if (strcmp(status, "NLG") == 0) {
             strcpy(response, Responses.ROA_NLG());
@@ -347,6 +356,13 @@ void analyse_tcp_response(char *response, int *loggedIn) {
     } else if (strcmp(msg_type, "RSA") == 0) {
         if (strcmp(status, "NOK") == 0) {
             strcpy(response, Responses.RSA_NOK());
+        } else if (strcmp(status, "OK") == 0) {
+            int FSIZE;
+            char FILENAME[256];
+            char file[256];
+            sscanf(response, "%*s %*s %s %d %s",FILENAME, &FSIZE, file);
+            handle_show_asset(file);
+            strcpy(response, Responses.RSA_OK(FSIZE,FILENAME));
         } 
         return;
     } else if (strcmp(msg_type, "RBD") == 0) {
@@ -367,26 +383,43 @@ void analyse_tcp_response(char *response, int *loggedIn) {
     }
 }
 
-int send_tcp_request(char *buffer){
+int send_tcp_request(char *buffer, int havefile){
     struct addrinfo hints,*res;
     int fd,n,errcode;
+    int loggedIn = 1;
+
     fd=socket(AF_INET,SOCK_STREAM,0); //TCP socket
     if (fd==-1) exit(1); //error
+
     memset(&hints,0,sizeof hints);
     hints.ai_family=AF_INET; //IPv4
     hints.ai_socktype=SOCK_STREAM; //TCP socket
+
     errcode=getaddrinfo(ASIP,ASport,&hints,&res);
     if(errcode!=0)/*error*/exit(1);
+
     n=connect(fd,res->ai_addr,res->ai_addrlen);
     if(n==-1)/*error*/exit(1);
+
     n=write(fd,buffer,strlen(buffer));
     if(n==-1)/*error*/exit(1);
-    n=read(fd,buffer,128);
+
+    if (havefile==1){
+        char asset_fname[256];
+        int fsize;
+        sscanf(buffer, "%*s %*d %*s %*s %*d %*d %s %d", asset_fname, &fsize);
+        int fd1=open(asset_fname,O_RDONLY);
+        n=sendfile(fd, fd1, NULL, fsize);
+        if(n==-1)/*error*/exit(1);
+        n=write(fd,"\n",1);
+        if(n==-1)/*error*/exit(1);
+    }
+
+    n=read(fd,buffer,strlen(buffer));
     if(n==-1)/*error*/exit(1);
-    printf("Response: %s\n",buffer);
+    analyse_tcp_response(buffer, &loggedIn);
     freeaddrinfo(res);
     close(fd);
-    return 0;
+    return loggedIn;
 }
-
 // ----------------------------------------------

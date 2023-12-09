@@ -26,6 +26,7 @@ struct ResponseMessages {
     const char *(*RRC_NOK)();
 
     const char *(*ROA_NOK)();
+    const char *(*ROA_OK)(int AID);
     const char *(*ROA_NLG)();
 
     const char *(*RCL_OK)();
@@ -36,6 +37,7 @@ struct ResponseMessages {
     const char *(*RCL_END)(int AID, int UID);
 
     const char *(*RSA_NOK)();
+    const char *(*RSA_OK)(int fsize, char *filename);
 
     const char *(*RBD_NOK)(int AID);
     const char *(*RBD_NLG)();

@@ -48,6 +48,6 @@ int exit_(char *buffer);
 
 int send_udp_request(char *request);
 
-int send_tcp_request(char *request);
+int send_tcp_request(char *request, int isFile);
 
 #endif

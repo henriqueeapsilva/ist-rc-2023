@@ -67,6 +67,11 @@ static const char *RRC_NOK() {
 // ---------------------------------------------------
 
 // ----------------- TCP messages --------------------
+static const char *ROA_OK(char *AID) {
+    char *result = (char *)malloc(snprintf(NULL, 0, "auction %s successfully opened\n", AID) + 1);
+    sprintf(result, "auction %s successfully opened\n", AID);
+    return result;
+}
 
 static const char *ROA_NOK() {
     return "auction could not be started\n";
@@ -110,6 +115,12 @@ static const char *RCL_END(int AID, int UID) {
 
 static const char *RSA_NOK() {
     return "no file to be sent\n";
+}
+
+static const char *RSA_OK(int fsize, char *filename) {
+    char *result = (char *)malloc(snprintf(NULL, 0, "filename: %s fsize: %d\n", filename, fsize) + 1);
+    sprintf(result, "filename: %s fsize: %d\n", filename, fsize);
+    return result;
 }
 
 static const char *RBD_NOK(int AID) {
@@ -157,6 +168,7 @@ const struct ResponseMessages Responses = {
     .RLS_NOK = RLS_NOK,
     .RRC_NOK = RRC_NOK,
     .ROA_NOK = ROA_NOK,
+    .ROA_OK = ROA_OK,
     .ROA_NLG = ROA_NLG,
     .RCL_OK = RCL_OK,
     .RCL_NOK = RCL_NOK,
@@ -165,6 +177,7 @@ const struct ResponseMessages Responses = {
     .RCL_EOW = RCL_EOW,
     .RCL_END = RCL_END,
     .RSA_NOK = RSA_NOK,
+    .RSA_OK = RSA_OK,
     .RBD_NOK = RBD_NOK,
     .RBD_NLG = RBD_NLG,
     .RBD_ACC = RBD_ACC,

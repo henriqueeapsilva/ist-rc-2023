@@ -10,6 +10,7 @@
 #include <netdb.h> 
 #include <string.h>
 #include <sys/sendfile.h>
+#include <stdbool.h>
 
 bool loggedIn = false; // 1 - logged In (true), 0 - Not logged In (false)
 User client;
@@ -92,41 +93,9 @@ int open_(char *buffer){
     fsize = ftell(file);
     fseek(file, 0L, SEEK_SET);
 
-    int fd1 = fileno(file);
-
-    struct addrinfo hints,*res;
-    int fd,n,errcode;
-    fd=socket(AF_INET,SOCK_STREAM,0); //TCP socket
-    if (fd==-1) exit(1); //error
-    memset(&hints,0,sizeof hints);
-    hints.ai_family=AF_INET; //IPv4
-    hints.ai_socktype=SOCK_STREAM; //TCP socket
-
-    errcode=getaddrinfo(ASIP,ASport,&hints,&res);
-    if(errcode!=0)/*error*/exit(1);
-
-    n=connect(fd,res->ai_addr,res->ai_addrlen);
-    if(n==-1)/*error*/exit(1);
-
     sprintf(buffer, "OPA %d %s %s %d %d %s %d ", client._UID, client._password, name, start_value, timeactive, asset_fname, fsize);
 
-    n=write(fd,buffer,strlen(buffer));
-    if(n==-1)/*error*/exit(1);
-
-    n=sendfile(fd, fd1, NULL, fsize);
-    if(n==-1)/*error*/exit(1);
-
-    n=write(fd,"\n",1);
-    if(n==-1)/*error*/exit(1);
-
-    n=read(fd,buffer,128);
-    if(n==-1)/*error*/exit(1);
-    buffer[n] = '\0';
-
-    printf("Response: %s\n",buffer);
-
-    freeaddrinfo(res);
-    close(fd);
+    send_tcp_request(buffer, 1);
     fclose(file);
     return 0;
 }
@@ -138,7 +107,7 @@ int close_(char *buffer){
         return 0;
     }
     sprintf(buffer, "CLS %d %s %d\n", client._UID, client._password, AID);
-    response = send_tcp_request(buffer);
+    response = send_tcp_request(buffer,0);
     return response;
 }
 
@@ -173,11 +142,62 @@ int list(char *buffer) {
 }
 
 int show_asset(char *buffer){
-    return 0;
+    int response;
+    char AID[3];
+
+    if (sscanf(buffer, "%*s %s", AID) != 1) {
+        printf("Invalid input format\n");
+        return 0;
+    }
+    sprintf(buffer, "SAS %s\n", AID);
+    struct addrinfo hints,*res;
+    int fd,n,errcode;
+    char teste[1];
+    fd=socket(AF_INET,SOCK_STREAM,0); //TCP socket
+    if (fd==-1) exit(1); //error
+    memset(&hints,0,sizeof hints);
+    hints.ai_family=AF_INET; //IPv4
+    hints.ai_socktype=SOCK_STREAM; //TCP socket
+    errcode=getaddrinfo(ASIP,ASport,&hints,&res);
+    if(errcode!=0)/*error*/exit(1);
+    n=connect(fd,res->ai_addr,res->ai_addrlen);
+    if(n==-1)/*error*/exit(1);
+    n=write(fd,buffer,strlen(buffer));
+    if(n==-1)/*error*/exit(1);
+    n=1;
+    /*read until an empty space*/
+    FILE *asset;
+    char *asset_fname="imagem.txt";
+    asset=fopen(asset_fname,"wb");
+    int i=0;
+    memset(buffer,0,128);
+    /*read until the third empty space*/
+    while (n>0){
+        n=read(fd,teste,1);
+        if(n==-1)/*error*/exit(1);
+        if(buffer[0]==' ') i++;
+        if(i==3) break;
+    }
+    fclose(asset);
+    printf("File received\n");
+    fflush(stdout);
+    if(n==-1)/*error*/exit(1);
+    freeaddrinfo(res);
+    close(fd);
+    response=0;
+    return response;
 }
 
 int bid(char *buffer){
-    return 0;
+    int AID, value, response;
+
+    if (sscanf(buffer, "%*s %d %d", &AID, &value) != 2) {
+        printf("Invalid input format\n");
+        return 0;
+    }
+    sprintf(buffer, "BID %d %s %d %d\n", client._UID, client._password, AID, value);
+    response = send_tcp_request(buffer,0);
+    return response;
 }
 
 int show_record(char *buffer) {
