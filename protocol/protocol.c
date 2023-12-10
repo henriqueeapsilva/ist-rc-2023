@@ -15,7 +15,7 @@
 #include <fcntl.h>
 
 int UID = 0;
-char *AID[3];
+char AID[3];
 
 // -------------  handler functions  -------------
 void handle_myauctions(char *response) {

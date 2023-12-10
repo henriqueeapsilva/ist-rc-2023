@@ -95,9 +95,9 @@ static const char *RCL_NLG() {
     return "user not logged in\n";
 }
 
-static const char *RCL_EAU(int AID) {
-    char *result = (char *)malloc(snprintf(NULL, 0, "auction %d does not exist\n", AID) + 1);
-    sprintf(result, "auction %d does not exist\n", AID);
+static const char *RCL_EAU(char *AID) {
+    char *result = (char *)malloc(snprintf(NULL, 0, "auction %s does not exist\n", AID) + 1);
+    sprintf(result, "auction %s does not exist\n", AID);
     return result;
 }
 
@@ -107,9 +107,9 @@ static const char *RCL_EOW(int UID) {
     return result;
 }
 
-static const char *RCL_END(int AID, int UID) {
-    char *result = (char *)malloc(snprintf(NULL, 0, "auction %d owned by user %d has already finished.\n", AID, UID) + 1);
-    sprintf(result, "auction %d owned by user %d has already finished.\n", AID, UID);
+static const char *RCL_END(char *AID, int UID) {
+    char *result = (char *)malloc(snprintf(NULL, 0, "auction %s owned by user %d has already finished.\n", AID, UID) + 1);
+    sprintf(result, "auction %s owned by user %d has already finished.\n", AID, UID);
     return result;
 }
 
@@ -123,9 +123,9 @@ static const char *RSA_OK(int fsize, char *filename) {
     return result;
 }
 
-static const char *RBD_NOK(int AID) {
-    char *result = (char *)malloc(snprintf(NULL, 0, "auction %d is not active\n", AID) + 1);
-    sprintf(result, "auction %d is not active\n", AID);
+static const char *RBD_NOK(char *AID) {
+    char *result = (char *)malloc(snprintf(NULL, 0, "auction %s is not active\n", AID) + 1);
+    sprintf(result, "auction %s is not active\n", AID);
     return result;
 }
 
@@ -133,9 +133,9 @@ static const char *RBD_NLG() {
     return "user not logged in\n";
 }
 
-static const char *RBD_ACC(int AID) {
-    char *result = (char *)malloc(snprintf(NULL, 0, "auction %d bid accepted\n", AID) + 1);
-    sprintf(result, "auction %d bid accepted\n", AID);
+static const char *RBD_ACC(char *AID) {
+    char *result = (char *)malloc(snprintf(NULL, 0, "auction %s bid accepted\n", AID) + 1);
+    sprintf(result, "auction %s bid accepted\n", AID);
     return result;
 }
 
