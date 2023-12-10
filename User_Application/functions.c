@@ -73,7 +73,7 @@ int login(char *buffer){
 
 int open_(char *buffer){
 
-    int start_value, timeactive, fsize;
+    int response, start_value, timeactive, fsize;
     char name[50], asset_fname[200];
 
     if (sscanf(buffer, "%*s %s %s %d %d", name, asset_fname, &start_value, &timeactive) != 4) {
@@ -95,9 +95,9 @@ int open_(char *buffer){
 
     sprintf(buffer, "OPA %d %s %s %d %d %s %d ", client._UID, client._password, name, start_value, timeactive, asset_fname, fsize);
 
-    send_tcp_request(buffer, 1);
+    response=send_tcp_request(buffer, 1);
     fclose(file);
-    return 0;
+    return response;
 }
 
 int close_(char *buffer){
@@ -150,41 +150,7 @@ int show_asset(char *buffer){
         return 0;
     }
     sprintf(buffer, "SAS %s\n", AID);
-    struct addrinfo hints,*res;
-    int fd,n,errcode;
-    char teste[1];
-    fd=socket(AF_INET,SOCK_STREAM,0); //TCP socket
-    if (fd==-1) exit(1); //error
-    memset(&hints,0,sizeof hints);
-    hints.ai_family=AF_INET; //IPv4
-    hints.ai_socktype=SOCK_STREAM; //TCP socket
-    errcode=getaddrinfo(ASIP,ASport,&hints,&res);
-    if(errcode!=0)/*error*/exit(1);
-    n=connect(fd,res->ai_addr,res->ai_addrlen);
-    if(n==-1)/*error*/exit(1);
-    n=write(fd,buffer,strlen(buffer));
-    if(n==-1)/*error*/exit(1);
-    n=1;
-    /*read until an empty space*/
-    FILE *asset;
-    char *asset_fname="imagem.txt";
-    asset=fopen(asset_fname,"wb");
-    int i=0;
-    memset(buffer,0,128);
-    /*read until the third empty space*/
-    while (n>0){
-        n=read(fd,teste,1);
-        if(n==-1)/*error*/exit(1);
-        if(buffer[0]==' ') i++;
-        if(i==3) break;
-    }
-    fclose(asset);
-    printf("File received\n");
-    fflush(stdout);
-    if(n==-1)/*error*/exit(1);
-    freeaddrinfo(res);
-    close(fd);
-    response=0;
+    response = send_tcp_request(buffer,2);
     return response;
 }
 

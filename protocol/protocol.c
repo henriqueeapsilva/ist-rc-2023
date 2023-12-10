@@ -161,9 +161,6 @@ void handle_show_record(char *response) {
     strcpy(response, display_buffer);
 }
 
-void handle_show_asset(char *buffer){
-
-}
 
 // ----------------------------------------------
 
@@ -311,7 +308,7 @@ int send_udp_request(char *buffer){
 
 // ---------------- TCP Functions ----------------
 
-void analyse_tcp_response(char *response, int *loggedIn) {
+void analyse_tcp_response(char *response) {
     // Extract the first three letters to determine the message type
     char msg_type[4];
     strncpy(msg_type, response, 3);
@@ -323,13 +320,10 @@ void analyse_tcp_response(char *response, int *loggedIn) {
     sscanf(response, "%*s %s", status);
 
     // Use the ResponseMessages structure to get the appropriate status message
-    fflush(stdout);
     if (strcmp(msg_type, "ROA") == 0) {
         if (strcmp(status, "OK") == 0) {
             sscanf(response, "%*s %*s %s", AID);
-            printf("cheguei aqui %s\n", AID);
             strcpy(response, Responses.ROA_OK(AID));
-            fflush(stdout);
         }else if (strcmp(status, "NOK") == 0) {
             strcpy(response, Responses.ROA_NOK());
         } else if (strcmp(status, "NLG") == 0) {
@@ -359,9 +353,7 @@ void analyse_tcp_response(char *response, int *loggedIn) {
         } else if (strcmp(status, "OK") == 0) {
             int FSIZE;
             char FILENAME[256];
-            char file[256];
-            sscanf(response, "%*s %*s %s %d %s",FILENAME, &FSIZE, file);
-            handle_show_asset(file);
+            sscanf(response, "%*s %*s %s %d",FILENAME, &FSIZE);
             strcpy(response, Responses.RSA_OK(FSIZE,FILENAME));
         } 
         return;
@@ -386,7 +378,6 @@ void analyse_tcp_response(char *response, int *loggedIn) {
 int send_tcp_request(char *buffer, int havefile){
     struct addrinfo hints,*res;
     int fd,n,errcode;
-    int loggedIn = 1;
 
     fd=socket(AF_INET,SOCK_STREAM,0); //TCP socket
     if (fd==-1) exit(1); //error
@@ -407,19 +398,48 @@ int send_tcp_request(char *buffer, int havefile){
     if (havefile==1){
         char asset_fname[256];
         int fsize;
+        printf("Este é o tamanho: %d\n",fsize);
         sscanf(buffer, "%*s %*d %*s %*s %*d %*d %s %d", asset_fname, &fsize);
         int fd1=open(asset_fname,O_RDONLY);
         n=sendfile(fd, fd1, NULL, fsize);
         if(n==-1)/*error*/exit(1);
         n=write(fd,"\n",1);
         if(n==-1)/*error*/exit(1);
+        close(fd1);
     }
-
-    n=read(fd,buffer,strlen(buffer));
+    memset(buffer,0,MAX_RESPONSE_SIZE);
+    int i=0;
+    int a=0;
+    while ((n = read(fd, &buffer[i], 1)) > 0) {
+        if (buffer[i] == ' ') a++;
+        if (a==4) break;
+        i++;
+    }
+    if (havefile==2){
+        int filesize;
+        char filename[256];
+        sscanf(buffer, "%*s %*s %s %d", filename, &filesize);
+        FILE *asset;
+        char teste[filesize];
+        asset=fopen(filename,"wb");
+        int n=0;
+        int fs=0;
+        while (fs<filesize){
+        n=read(fd,teste,filesize);
+        if(n==-1)/*error*/exit(1);
+        fwrite(teste,1,n,asset);
+        fs+=n;
+        }
+        fclose(asset);
+    }
     if(n==-1)/*error*/exit(1);
-    analyse_tcp_response(buffer, &loggedIn);
+    printf("%s\n",buffer);
+    fflush(stdout);
+    if(n==-1)/*error*/exit(1);
+    analyse_tcp_response(buffer);
+    write(1,buffer,strlen(buffer));
     freeaddrinfo(res);
     close(fd);
-    return loggedIn;
+    return 0;
 }
 // ----------------------------------------------
