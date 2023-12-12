@@ -122,9 +122,10 @@ static const char *RSA_OK(int fsize, char *filename) {
     sprintf(result, "filename: %s fsize: %d\n", filename, fsize);
     return result;
 }
-
-static const char *RBD_OK() {
-    return "bid was successful\n";
+static const char *RBD_OK(char *AID) {
+    char *result = (char *)malloc(snprintf(NULL, 0, "successful bid at auction %s\n", AID) + 1);
+    sprintf(result, "successful bid at auction %s\n", AID);
+    return result;
 }
 
 static const char *RBD_NOK(char *AID) {

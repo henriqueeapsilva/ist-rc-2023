@@ -2,11 +2,12 @@
 #define RESPONSE_MESSAGES_H
 
 // Define a structure to hold function pointers
-struct ResponseMessages {
+struct ResponseMessages
+{
     const char *(*RLI_OK)();
     const char *(*RLI_NOK)();
     const char *(*RLI_REG)();
-    
+
     const char *(*RLO_OK)();
     const char *(*RLO_NOK)();
     const char *(*RLO_UNR)();
@@ -39,7 +40,7 @@ struct ResponseMessages {
     const char *(*RSA_NOK)();
     const char *(*RSA_OK)(int fsize, char *filename);
 
-    const char *(*RBD_OK)();
+    const char *(*RBD_OK)(char *AID);
     const char *(*RBD_NOK)(char *AID);
     const char *(*RBD_NLG)();
     const char *(*RBD_ACC)(char *AID);

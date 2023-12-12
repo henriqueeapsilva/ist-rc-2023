@@ -47,7 +47,7 @@ char *handle_myauctions(char *response)
 
         response += strlen(" %s %d");
     }
-    printf("%s\n", display_buffer);
+   
     free(display_buffer);
 
     return display_buffer;
@@ -82,7 +82,6 @@ char *handle_mybids(char *response)
 
         response += strlen(" %s %d");
     }
-    printf("%s\n", display_buffer);
     free(display_buffer);
 
     return display_buffer;
@@ -133,15 +132,16 @@ char *handle_show_record(char *response)
     // B 101 6000 2023-12-06 12:05:00 300 E 2023-12-06 13:00:00 3600"
 
     // Initialize variables to store auction details
-    int host_UID, bidder_UID, start_value, bid_value, timeactive, bid_sec_time, end_sec_time;
-    char auction_name[256], asset_fname[256], start_date_time[20], bid_date_time[20], end_date_time[20];
-    char status[4];
+    char host_UID[MAX_NAME_D+1] = "";
+    char auction_name[MAX_NAME_D+1] = "";
+    char asset_fname[MAX_FILENAME+1] = "";
+    char start_value[MAX_START_VALUE+1] = "";
+    char start_date[10+1] = "";
+    char start_time[8+1] = "";
+    char timeactive[MAX_AUCTION_DURATION+1] = "";
 
-    sscanf(response, "%*s %s", status);
-
-    // Read the auction details
-    sscanf(response, "%*s %*s %d %d %s %s %d %s %d", &host_UID, &bidder_UID, auction_name, asset_fname, &start_value, start_date_time, &timeactive);
-
+    response += strlen("RRC OK ");
+    
     // Initialize a buffer to store the display string
     char *display_buffer = (char *)malloc(MAX_RESPONSE_SIZE);
     // Check if malloc was successful
@@ -151,37 +151,42 @@ char *handle_show_record(char *response)
     }
 
     display_buffer[0] = '\0'; // Ensure the buffer is initially empty
-    // Add auction details to the display string
-    sprintf(display_buffer, "Auction Details:\nHost UID: %d\nAuction Name: %s\nAsset Filename: %s\nStart Value: %d\nStart Date-Time: %s\nTime Active: %d seconds\n\n", host_UID, auction_name, asset_fname, start_value, start_date_time, timeactive);
+  
+    // Read the auction details
+    sscanf(response, "%s %s %s %s %s %s %s", host_UID, auction_name, asset_fname, start_value, start_date, start_time, timeactive);
 
-    // Move to the bids section of the response
-    response = strchr(response, 'B');
-    if (response == NULL)
-    {
-        // No bids present, print the auction details and return
-        return display_buffer;
-    }
+    sprintf(display_buffer, "--- AUCTION: %s ---\n│Auction Host: %s|\n│Opened in: %s %s|\n│Duration: %s seconds|\n│Asset Name: %s|\n│Starting Bid: %s|\n", 
+        auction_name, host_UID, start_date, start_time, timeactive, asset_fname, start_value);
 
-    // Iterate through the bids
-    while (sscanf(response, "B %d %d %s %d", &bidder_UID, &bid_value, bid_date_time, &bid_sec_time) == 4)
-    {
-        // Add bid details to the display string
-        sprintf(display_buffer + strlen(display_buffer), "Bidder UID: %d\nBid Value: %d\nBid Date-Time: %s\nBid Sec Time: %d seconds\n\n", bidder_UID, bid_value, bid_date_time, bid_sec_time);
+    char *token = strtok(response, " ");
 
-        // Move to the next bid in the response
-        response = strchr(response, 'B');
-        if (response == NULL)
-        {
-            break; // Exit the loop if there are no more bids
+        while (token != NULL) {
+            if (strcmp(token, "B") == 0) {
+                strcat(display_buffer, "---\n");
+                strcat(display_buffer, "│Bidder Name: "); 
+                token = strtok(NULL, " ");
+                strcat(display_buffer, token);
+                strcat(display_buffer, "\n│Bid Value: ");
+                token = strtok(NULL, " ");
+                strcat(display_buffer, token);
+                strcat(display_buffer, "\n│Date: ");
+                token = strtok(NULL, " ");
+                strcat(display_buffer, token);
+                token = strtok(NULL, " ");
+                strcat(display_buffer, token);
+                strcat(display_buffer, "\n");
+            }
+            else if (strcmp(token, "E") == 0) {
+                strcat(display_buffer, "---\n│Ended in: ");
+                token = strtok(NULL, " ");
+                strcat(display_buffer, token);
+                token = strtok(NULL, " ");
+                strcat(display_buffer, " ");
+                strcat(display_buffer, token);
+                strcat(display_buffer, "\n---\n");
+            }
+            token = strtok(NULL, " ");
         }
-    }
-
-    // Check if the auction is closed
-    if (sscanf(response, "E %s %d", end_date_time, &end_sec_time) == 2)
-    {
-        // Add closing details to the display string
-        sprintf(display_buffer + strlen(display_buffer), "Auction Closed:\nEnd Date-Time: %s\nEnd Sec Time: %d seconds\n", end_date_time, end_sec_time);
-    }
 
     free(display_buffer);
 
@@ -294,7 +299,7 @@ void analyse_udp_response(char *response, int *loggedIn)
     {
         if (strcmp(status, "OK") == 0)
         {
-            handle_mybids(response);
+            strcpy(response, handle_mybids(response));
             return;
         }
         else if (strcmp(status, "NOK") == 0)
@@ -332,7 +337,7 @@ void analyse_udp_response(char *response, int *loggedIn)
     {
         if (strcmp(status, "OK") == 0)
         {
-            handle_show_record(response);
+            strcpy(response, handle_show_record(response));
             return;
         }
         else if (strcmp(status, "NOK") == 0)
@@ -479,7 +484,7 @@ void analyse_tcp_response(char *response)
     {
         if (strcmp(status, "OK") == 0)
         {
-            strcpy(response, Responses.RBD_OK());
+            strcpy(response, Responses.RBD_OK(AID));
         }
         else if (strcmp(status, "NOK") == 0)
         {

@@ -170,16 +170,17 @@ int bid(char *buffer){
 }
 
 int show_record(char *buffer) {
-    int response, AID;
+    int response;
+    char AID[4];
 
     // Parse AID from the buffer
-    if (sscanf(buffer, "%*s %d", &AID) != 1) {
+    if (sscanf(buffer, "%*s %s", AID) != 1) {
         printf("Invalid input format\n");
         return 0;
     }
 
     // Create the protocol message
-    sprintf(buffer, "SRC %d\n", AID);
+    sprintf(buffer, "SRC %s\n", AID);
 
     // Send UDP request
     response = send_udp_request(buffer);
