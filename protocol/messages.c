@@ -123,6 +123,10 @@ static const char *RSA_OK(int fsize, char *filename) {
     return result;
 }
 
+static const char *RBD_OK() {
+    return "bid was successful\n";
+}
+
 static const char *RBD_NOK(char *AID) {
     char *result = (char *)malloc(snprintf(NULL, 0, "auction %s is not active\n", AID) + 1);
     sprintf(result, "auction %s is not active\n", AID);

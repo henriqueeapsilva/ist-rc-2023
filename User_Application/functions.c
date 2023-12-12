@@ -143,7 +143,7 @@ int list(char *buffer) {
 
 int show_asset(char *buffer){
     int response;
-    char AID[3];
+    char AID[4];
 
     if (sscanf(buffer, "%*s %s", AID) != 1) {
         printf("Invalid input format\n");
@@ -155,14 +155,17 @@ int show_asset(char *buffer){
 }
 
 int bid(char *buffer){
-    int AID, value, response;
+    char AID[4];
+    int value, response;
 
-    if (sscanf(buffer, "%*s %d %d", &AID, &value) != 2) {
+    if (sscanf(buffer, "%*s %s %d", AID, &value) != 2) {
         printf("Invalid input format\n");
         return 0;
     }
-    sprintf(buffer, "BID %d %s %d %d\n", client._UID, client._password, AID, value);
+    sprintf(buffer, "BID %d %s %s %d\n", client._UID, client._password, AID, value);
+
     response = send_tcp_request(buffer,0);
+
     return response;
 }
 
