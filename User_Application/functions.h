@@ -20,7 +20,7 @@ typedef struct {
     CommandFunction function;
 } CommandEntry;
 
-int executeCommand(const char *command, char* buffer);
+void executeCommand(const char *command, char* buffer);
 
 int login(char *buffer);
 
@@ -46,8 +46,6 @@ int unregister(char *buffer);
 
 int exit_(char *buffer);
 
-int send_udp_request(char *request);
 
-int send_tcp_request(char *request, int isFile);
 
 #endif

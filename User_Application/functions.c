@@ -114,6 +114,11 @@ int close_(char *buffer){
 int myauctions(char *buffer) {
     int response;
 
+    if (loggedIn == 0) {
+        printf("user not logged in\n\n");
+        return 0;
+    }
+
     sprintf(buffer, "LMA %d\n", client._UID);
 
     response = send_udp_request(buffer);
@@ -123,6 +128,12 @@ int myauctions(char *buffer) {
 
 int mybids(char *buffer) {
     int response;
+
+    if (loggedIn == 0) {
+        printf("user not logged in\n\n");
+        return 0;
+    }
+    
 
     sprintf(buffer, "LMB %d\n", client._UID);
 
@@ -157,6 +168,11 @@ int show_asset(char *buffer){
 int bid(char *buffer){
     char AID[4];
     int value, response;
+
+    if (loggedIn == 0) {
+        printf("user not logged in\n\n");
+        return 0;
+    }
 
     if (sscanf(buffer, "%*s %s %d", AID, &value) != 2) {
         printf("Invalid input format\n");
@@ -269,12 +285,13 @@ CommandEntry commandTable[] = {
 };
 
 // Function to execute a command
-int executeCommand(const char *command, char* buffer) {
+void executeCommand(const char *command, char* buffer) {
     for (int i = 0; commandTable[i].command != NULL; i++) {
         if (strcmp(commandTable[i].command, command) == 0) {
-            return commandTable[i].function(buffer);
+            commandTable[i].function(buffer);
+            return;
         }
     }
     printf("Invalid command\n");
-    return 1;
+    return ;
 }

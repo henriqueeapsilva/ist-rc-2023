@@ -122,6 +122,7 @@ static const char *RSA_OK(int fsize, char *filename) {
     sprintf(result, "filename: %s fsize: %d\n", filename, fsize);
     return result;
 }
+
 static const char *RBD_OK(char *AID) {
     char *result = (char *)malloc(snprintf(NULL, 0, "successful bid at auction %s\n", AID) + 1);
     sprintf(result, "successful bid at auction %s\n", AID);
@@ -183,6 +184,7 @@ const struct ResponseMessages Responses = {
     .RCL_END = RCL_END,
     .RSA_NOK = RSA_NOK,
     .RSA_OK = RSA_OK,
+    .RBD_OK = RBD_OK,
     .RBD_NOK = RBD_NOK,
     .RBD_NLG = RBD_NLG,
     .RBD_ACC = RBD_ACC,
