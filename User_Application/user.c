@@ -1,11 +1,6 @@
 #define _GNU_SOURCE
 
-#include "functions.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <string.h>
+#include "user.h"
 
 
 char *ASIP = "193.136.138.142";

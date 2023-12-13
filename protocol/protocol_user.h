@@ -1,6 +1,20 @@
 #ifndef _PROTOCOL_H_
 #define _PROTOCOL_H_
 
+#include "messages.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <ctype.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <string.h>
+#include <sys/sendfile.h>
+#include <stdbool.h>
+#include <fcntl.h>
+
 #define MAX_NAME_D 6
 #define MAX_FILENAME 24
 #define MAX_START_VALUE 6

@@ -1,16 +1,4 @@
 #include "functions.h"
-#include "../protocol/protocol.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h> 
-#include <string.h>
-#include <sys/sendfile.h>
-#include <stdbool.h>
 
 bool loggedIn = false; // 1 - logged In (true), 0 - Not logged In (false)
 User client;

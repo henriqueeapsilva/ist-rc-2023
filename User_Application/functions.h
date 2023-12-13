@@ -1,7 +1,22 @@
 #ifndef _FUNTIONS_H_
 #define _FUNCTION_H_
 
+#include "../protocol/protocol_user.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <ctype.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h> 
+#include <string.h>
+#include <sys/sendfile.h>
+#include <stdbool.h>
+
 #define MAX_RESPONSE_SIZE 6010
+
+
 
 extern char *ASIP;
 extern char *ASport;

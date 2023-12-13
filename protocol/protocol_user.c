@@ -1,18 +1,5 @@
+#include "protocol_user.h"
 #include "../User_Application/functions.h"
-#include "protocol.h"
-#include "messages.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <string.h>
-#include <sys/sendfile.h>
-#include <stdbool.h>
-#include <fcntl.h>
 
 int UID = 0;
 char AID[3];
@@ -114,8 +101,7 @@ char *handle_list(char *response)
     while (sscanf(response, "%s %d", AID, &state) == 2)
     {
 
-        if(state == 1)
-           sprintf(display_buffer + strlen(display_buffer), "AID: %3s\n", AID);
+        sprintf(display_buffer + strlen(display_buffer), "AID: %3s state: %s\n", AID, (state == 1) ? "active" : "inactive");
 
         response += strlen(" %s %d");
     }

@@ -1,6 +1,11 @@
 #ifndef RESPONSE_MESSAGES_H
 #define RESPONSE_MESSAGES_H
 
+
+#include <stdio.h>
+#include <stddef.h>
+#include <stdlib.h>
+
 // Define a structure to hold function pointers
 struct ResponseMessages
 {

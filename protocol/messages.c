@@ -1,7 +1,4 @@
 #include "messages.h"
-#include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
 
 // ----------------- UDP messages --------------------
 static const char *RLI_OK() {
