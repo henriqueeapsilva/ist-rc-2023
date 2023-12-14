@@ -11,6 +11,12 @@ int login(char *buffer){
     int response;
     char password[9];  // 8 characters for the password + 1 for null-terminator
 
+    if(loggedIn){
+        printf("Already logged in on another user, please logout first!\n");
+        return 1;
+    }
+
+
     // Parse UID and password from the buffer
     if (sscanf(buffer, "%*s %s %8s", UID, password) != 2) {
         printf("Invalid input format\n");

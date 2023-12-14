@@ -8,7 +8,8 @@ int is_valid_uid(char *uid) {
             return 0;
     }
     
-    return (strlen(uid) == 6);
+    if (strlen(uid) == 6) return 0;
+    return 1;
 }
 
 int is_valid_aid(char *aid) {

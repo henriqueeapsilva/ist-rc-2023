@@ -91,10 +91,11 @@ bool check_user_pass(char *UID, char *password){
     FILE *f_user = fopen(user_dir_name, "r");
 
     fscanf(f_user, "%s", dir_password);
+    dir_password[8] = '\0';
 
     fclose(f_user);
 
-    if(strcmp(password, dir_password)){
+    if(strcmp(password, dir_password) == 0){
         return true;
     }
     return false;
@@ -159,6 +160,24 @@ void log_client(char *UID){
 
     fclose(f_user);
 
+}
+
+void log_out_user(char *UID){
+    char user_dir_login[50];
+
+    sprintf(user_dir_login, "%s/%s/%s_login.txt" ,DIR_USER, UID, UID);
+    unlink(user_dir_login);
+}
+
+void unr_user(char *UID){
+    char user_dir_login[50];
+    char user_dir_pass[50];
+
+    sprintf(user_dir_login, "%s/%s/%s_login.txt" ,DIR_USER, UID, UID);
+    sprintf(user_dir_pass, "%s/%s/%s_pass.txt" ,DIR_USER, UID, UID); 
+
+    unlink(user_dir_login);
+    unlink(user_dir_pass);      
 }
 
 void close_auction(char *AID){

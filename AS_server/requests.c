@@ -15,7 +15,7 @@ int login_handler(int fd, struct sockaddr_in addr,  char *buffer){
         return 1;
     }
     if (is_valid_uid(UID) == 0 || is_valid_password(password) == 0) {
-        send_reply(fd, addr, Messages.LIN_NOK());
+        send_reply(fd, addr, Messages.LIN_ERR());
         return 1;
     }
     if(!user_is_registed(UID)){
@@ -34,10 +34,54 @@ int login_handler(int fd, struct sockaddr_in addr,  char *buffer){
 }
 
 int logout_handler(int fd, struct sockaddr_in addr,  char *buffer){
+    char UID[7];
+    char password[9];  
+    
+
+    if (sscanf(buffer, "%*s %s %s", UID, password) != 2) {
+        send_reply(fd, addr, Messages.LOU_ERR());
+        return 1;
+    }
+    if (is_valid_uid(UID) == 0 || is_valid_password(password) == 0) {
+        send_reply(fd, addr, Messages.LOU_ERR());
+        return 1;
+    }
+
+    if(!user_is_registed(UID)){
+        send_reply(fd, addr, Messages.LOU_UNR());
+    } else if(!user_is_logged(UID)){
+        send_reply(fd, addr, Messages.LOU_NOK());
+    } else {
+        log_out_user(UID);
+        send_reply(fd, addr, Messages.LOU_OK());
+    }
+
     return 0;
 }
 
 int unregister_handler(int fd, struct sockaddr_in addr,  char *buffer){
+    char UID[7];
+    char password[9];  
+    
+
+    if (sscanf(buffer, "%*s %s %s", UID, password) != 2) {
+        send_reply(fd, addr, Messages.UNR_ERR());
+        return 1;
+    }
+    if (is_valid_uid(UID) == 0 || is_valid_password(password) == 0) {
+        send_reply(fd, addr, Messages.UNR_ERR());
+        return 1;
+    }
+    if(!user_is_logged(UID)){
+        send_reply(fd, addr, Messages.UNR_NOK());
+    } else if(!user_is_registed(UID)){
+        send_reply(fd, addr, Messages.UNR_UNR());
+    } else {
+        unr_user(UID);
+        send_reply(fd, addr, Messages.UNR_OK());
+    }
+
+
     return 0;
 }
 
