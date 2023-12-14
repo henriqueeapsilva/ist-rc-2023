@@ -41,9 +41,6 @@ int unregister_handler(int fd, struct sockaddr_in addr,  char *buffer){
     return 0;
 }
 
-int exit_handler(int fd, struct sockaddr_in addr,  char *buffer){
-    return 0;
-}
 
 int open_handler(int fd, struct sockaddr_in addr,  char *buffer){
     return 0;

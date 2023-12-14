@@ -22,8 +22,6 @@ int logout_handler(int fd, struct sockaddr_in addr,  char *buffer);
 
 int unregister_handler(int fd, struct sockaddr_in addr,  char *buffer);
 
-int exit_handler(int fd, struct sockaddr_in addr,  char *buffer);
-
 int open_handler(int fd, struct sockaddr_in addr,  char *buffer);
 
 int close_handler(int fd, struct sockaddr_in addr,  char *buffer);
