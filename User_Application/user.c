@@ -3,8 +3,8 @@
 #include "user.h"
 
 
-char *ASIP = "193.136.138.142";
-char *ASport = "58011";
+char *asip = "193.136.138.142";
+char *asport = "58011";
 char *INITIAL = "\ncommands:\n login [UID] [password]\n open [name] [asset_name] [start_value] [timeactive]\n close [AID]\n myaction or ma\n mybids or mb \n list or l\n show_asset [AID] or sa [AID]\n bid [AID] [value] or b [AID] [value]\n show_record [AID] or sr [AID]\n logout\n unregister\n exit\n";
 
 
@@ -12,16 +12,16 @@ char *INITIAL = "\ncommands:\n login [UID] [password]\n open [name] [asset_name]
 int main(int argc, char **argv){
 
     int opt;
-    char buffer[MAX_RESPONSE_SIZE];
+    char buffer[MAX_BUFFER_SIZE];
     char command[20];
 
     while ((opt = getopt(argc, argv, "n:p:")) != -1) {
         switch (opt) {
             case 'n':
-                ASIP = optarg;
+                asip = optarg;
                 break;
             case 'p':
-                ASport = optarg;
+                asport = optarg;
                 break;
             case '?':
                 fprintf(stderr, "Usage: %s [-n ASIP] [-p ASport]\n", argv[0]);

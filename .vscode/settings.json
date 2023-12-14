@@ -3,6 +3,8 @@
         "functions.h": "c",
         "unistd.h": "c",
         "stdio.h": "c",
-        "protocol_user.h": "c"
+        "protocol_user.h": "c",
+        "types.h": "c",
+        "string.h": "c"
     }
 }

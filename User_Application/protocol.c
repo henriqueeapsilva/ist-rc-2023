@@ -1,5 +1,4 @@
-#include "protocol_user.h"
-#include "../User_Application/functions.h"
+#include "protocol.h"
 
 int UID = 0;
 char AID[3];
@@ -14,7 +13,7 @@ char *handle_myauctions(char *response)
     response += strlen("RMA OK ");
 
     // Initialize a buffer to store the display string
-    char *display_buffer = (char *)malloc(MAX_RESPONSE_SIZE);
+    char *display_buffer = (char *)malloc(MAX_BUFFER_SIZE);
     // Check if malloc was successful
     if (display_buffer == NULL)
     {
@@ -49,7 +48,7 @@ char *handle_mybids(char *response)
     response += strlen("RMB OK ");
 
     // Initialize a buffer to store the display string
-    char *display_buffer = (char *)malloc(MAX_RESPONSE_SIZE);
+    char *display_buffer = (char *)malloc(MAX_BUFFER_SIZE);
     // Check if malloc was successful
     if (display_buffer == NULL)
     {
@@ -86,7 +85,7 @@ char *handle_list(char *response)
     response += strlen("RLS OK ");
 
     // Initialize a buffer to store the display string
-    char *display_buffer = (char *)malloc(MAX_RESPONSE_SIZE);
+    char *display_buffer = (char *)malloc(MAX_BUFFER_SIZE);
     // Check if malloc was successful
     if (display_buffer == NULL)
     {
@@ -129,7 +128,7 @@ char *handle_show_record(char *response)
     response += strlen("RRC OK ");
     
     // Initialize a buffer to store the display string
-    char *display_buffer = (char *)malloc(MAX_RESPONSE_SIZE);
+    char *display_buffer = (char *)malloc(MAX_BUFFER_SIZE);
     // Check if malloc was successful
     if (display_buffer == NULL)
     {
@@ -358,7 +357,7 @@ int send_udp_request(char *buffer)
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_DGRAM;
 
-    errcode = getaddrinfo(ASIP, ASport, &hints, &res);
+    errcode = getaddrinfo(asip, asport, &hints, &res);
     if (errcode != 0)
         exit(1);
 
@@ -368,7 +367,7 @@ int send_udp_request(char *buffer)
 
     addrlen = sizeof(addr);
 
-    n = recvfrom(fd, buffer, MAX_RESPONSE_SIZE, 0, (struct sockaddr *)&addr, &addrlen);
+    n = recvfrom(fd, buffer, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&addr, &addrlen);
 
     if (n == -1)
         exit(1);
@@ -513,7 +512,7 @@ int send_tcp_request(char *buffer, int havefile)
     hints.ai_family = AF_INET;       // IPv4
     hints.ai_socktype = SOCK_STREAM; // TCP socket
 
-    errcode = getaddrinfo(ASIP, ASport, &hints, &res);
+    errcode = getaddrinfo(asip, asport, &hints, &res);
     if (errcode != 0) /*error*/
         exit(1);
 
@@ -546,7 +545,7 @@ int send_tcp_request(char *buffer, int havefile)
         
         close(fd1);
     }
-    memset(buffer, 0, MAX_RESPONSE_SIZE);
+    memset(buffer, 0, MAX_BUFFER_SIZE);
     
     int i = 0;
     int a = 0;

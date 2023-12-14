@@ -1,7 +1,8 @@
 #ifndef _FUNTIONS_H_
 #define _FUNCTION_H_
 
-#include "../protocol/protocol_user.h"
+#include "../utils/utils.h"
+#include "protocol.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -13,13 +14,6 @@
 #include <string.h>
 #include <sys/sendfile.h>
 #include <stdbool.h>
-
-#define MAX_RESPONSE_SIZE 6010
-
-
-
-extern char *ASIP;
-extern char *ASport;
 
 typedef struct user
 {

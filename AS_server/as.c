@@ -4,13 +4,13 @@
 
 bool verbose = false;
 
-char *ASIP = "193.136.138.142";
-char *ASport = "58045";
-
+char *asport = "58045";
 
 int main(int argc, char **argv) {
-    int opt;
-    char buffer[MAX_RESPONSE_SIZE];
+    int opt, port;
+    char buffer[MAX_BUFFER_SIZE];
+
+    port = atoi(asport);
 
     while ((opt = getopt(argc, argv, "v")) != -1) {
         switch (opt) {
@@ -45,11 +45,11 @@ int main(int argc, char **argv) {
 
     udp_server_address.sin_family = AF_INET;
     udp_server_address.sin_addr.s_addr = htonl(INADDR_ANY);
-    udp_server_address.sin_port = htons(12345); // Change the port as needed
+    udp_server_address.sin_port = htons(port); 
 
     tcp_server_address.sin_family = AF_INET;
     tcp_server_address.sin_addr.s_addr = htonl(INADDR_ANY);
-    tcp_server_address.sin_port = htons(12346); // Change the port as needed
+    tcp_server_address.sin_port = htons(port);
 
     // Bind UDP socket to the specified address and port
     if (bind(udp_socket, (struct sockaddr*)&udp_server_address, sizeof(udp_server_address)) == -1) {
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
             }
 
             // Process the received UDP request
-            execute_request(buffer);
+            //execute_request(buffer);
         }
 
         if (FD_ISSET(tcp_socket, &read_fds)) {
@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
             }
 
             // Process the received TCP request
-            execute_request(buffer);
+            //execute_request(buffer);
 
             // Close the client socket
             close(client_socket);

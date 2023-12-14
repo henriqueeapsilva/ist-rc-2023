@@ -2,13 +2,8 @@ CC = gcc
 CFLAGS = -Wall -pedantic
 
 # Source files in the current directory
-SRCS := $(wildcard User_Application/*.c)
+SRCS := $(wildcard *.c)
 
-# Source files in the 'src' directory
-SRCS += $(wildcard protocol/*.c)
-
-# Source files in the 'src' directory
-#SRCS += $(wildcard ../AS_server/*.c)
 
 # Object files corresponding to source files
 OBJS := $(SRCS:.c=.o)
