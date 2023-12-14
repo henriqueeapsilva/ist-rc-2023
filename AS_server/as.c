@@ -9,6 +9,7 @@ char *asport = "58045";
 int main(int argc, char **argv) {
     int opt, port;
     char buffer[MAX_BUFFER_SIZE];
+    char command[20];
 
     port = atoi(asport);
 
@@ -113,8 +114,10 @@ int main(int argc, char **argv) {
                        ntohs(client_address.sin_port));
             }
 
-            // Process the received UDP request
-            //execute_request(buffer);
+            // access the command to execute
+            sscanf(buffer, "%s", command);
+            //executes the command
+            execute_request(udp_socket,client_address,command, buffer);
         }
 
         if (FD_ISSET(tcp_socket, &read_fds)) {
@@ -147,8 +150,10 @@ int main(int argc, char **argv) {
                 printf("Received TCP message: %s\n", buffer);
             }
 
-            // Process the received TCP request
-            //execute_request(buffer);
+            // access the command to execute
+            sscanf(buffer, "%s", command);
+            //executes the command
+            execute_request(tcp_socket, tcp_server_address ,command, buffer);
 
             // Close the client socket
             close(client_socket);

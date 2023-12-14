@@ -2,7 +2,8 @@ CC = gcc
 CFLAGS = -Wall -pedantic
 
 # Source files in the current directory
-SRCS := $(wildcard *.c)
+SRCS := $(wildcard *.c) ../utils/utils.c
+
 
 
 # Object files corresponding to source files

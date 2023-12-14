@@ -3,8 +3,8 @@
 #include "user.h"
 
 
-char *asip = "193.136.138.142";
-char *asport = "58011";
+char *asip = "127.0.0.1";
+char *asport = "58045";
 char *INITIAL = "\ncommands:\n login [UID] [password]\n open [name] [asset_name] [start_value] [timeactive]\n close [AID]\n myaction or ma\n mybids or mb \n list or l\n show_asset [AID] or sa [AID]\n bid [AID] [value] or b [AID] [value]\n show_record [AID] or sr [AID]\n logout\n unregister\n exit\n";
 
 

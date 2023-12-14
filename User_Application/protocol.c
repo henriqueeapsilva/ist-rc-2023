@@ -1,6 +1,6 @@
 #include "protocol.h"
 
-int UID = 0;
+char UID[7];
 char AID[3];
 
 // -------------  handler functions  -------------
@@ -418,7 +418,7 @@ void analyse_tcp_response(char *response)
         }
         else
         {
-            strcpy(response, "ERR");
+            strcpy(response, "ERROR");
         }
         return;
     }

@@ -3,18 +3,6 @@
 
 #include "../utils/utils.h"
 #include "messages.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <string.h>
-#include <sys/sendfile.h>
-#include <stdbool.h>
-#include <fcntl.h>
 
 
 char *handle_myauctions(char *buffer);

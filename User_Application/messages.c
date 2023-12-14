@@ -82,9 +82,9 @@ static const char *RCL_OK() {
     return "auction successfully closed\n";
 }
 
-static const char *RCL_NOK(int UID) {
-    char *result = (char *)malloc(snprintf(NULL, 0, "user %d does not exist\n", UID) + 1);
-    sprintf(result, "user %d does not exist\n", UID);
+static const char *RCL_NOK(char *UID) {
+    char *result = (char *)malloc(snprintf(NULL, 0, "user %s does not exist\n", UID) + 1);
+    sprintf(result, "user %s does not exist\n", UID);
     return result;
 }
 
@@ -98,15 +98,15 @@ static const char *RCL_EAU(char *AID) {
     return result;
 }
 
-static const char *RCL_EOW(int UID) {
-    char *result = (char *)malloc(snprintf(NULL, 0, "auction is not owned by user %d\n", UID) + 1);
-    sprintf(result, "auction is not owned by user %d\n", UID);
+static const char *RCL_EOW(char *UID) {
+    char *result = (char *)malloc(snprintf(NULL, 0, "auction is not owned by user %s\n", UID) + 1);
+    sprintf(result, "auction is not owned by user %s\n", UID);
     return result;
 }
 
-static const char *RCL_END(char *AID, int UID) {
-    char *result = (char *)malloc(snprintf(NULL, 0, "auction %s owned by user %d has already finished.\n", AID, UID) + 1);
-    sprintf(result, "auction %s owned by user %d has already finished.\n", AID, UID);
+static const char *RCL_END(char *AID, char *UID) {
+    char *result = (char *)malloc(snprintf(NULL, 0, "auction %s owned by user %s has already finished.\n", AID, UID) + 1);
+    sprintf(result, "auction %s owned by user %s has already finished.\n", AID, UID);
     return result;
 }
 

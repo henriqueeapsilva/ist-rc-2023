@@ -5,6 +5,13 @@
         "stdio.h": "c",
         "protocol_user.h": "c",
         "types.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "time.h": "c",
+        "sendfile.h": "c",
+        "socket.h": "c",
+        "utils.h": "c",
+        "inet.h": "c",
+        "dir_functions.h": "c",
+        "requests.h": "c"
     }
 }

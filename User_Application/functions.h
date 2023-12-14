@@ -3,21 +3,10 @@
 
 #include "../utils/utils.h"
 #include "protocol.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h> 
-#include <string.h>
-#include <sys/sendfile.h>
-#include <stdbool.h>
 
 typedef struct user
 {
-    int _UID;
+    char _UID[7];
     char _password[9];
 }User;
 

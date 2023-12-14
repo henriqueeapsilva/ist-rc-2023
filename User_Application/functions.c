@@ -4,33 +4,15 @@ bool loggedIn = false; // 1 - logged In (true), 0 - Not logged In (false)
 User client;
 
 
-// ------- check functions -------
-
-int is_valid_uid(const int uid) {
-    // Check if UID has 6 digits
-    return (uid >= 100000 && uid <= 999999);
-}
-
-int is_valid_password(const char *password) {
-    // Check if password has 8 alphanumerics (only digits and letters)
-    for (int i = 0; i < 8; ++i) {
-        if (!isalnum(password[i])) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-// -------------------------------
-
 // ---- User command functions ---
 
 int login(char *buffer){
-    int UID, response;
+    char UID[7];
+    int response;
     char password[9];  // 8 characters for the password + 1 for null-terminator
 
     // Parse UID and password from the buffer
-    if (sscanf(buffer, "%*s %d %8s", &UID, password) != 2) {
+    if (sscanf(buffer, "%*s %s %8s", UID, password) != 2) {
         printf("Invalid input format\n");
         return 1;
     }
@@ -46,12 +28,12 @@ int login(char *buffer){
         return 1;
     }
 
-    sprintf(buffer, "LIN %d %s\n", UID, password);
+    sprintf(buffer, "LIN %s %s\n", UID, password);
     
     response = send_udp_request(buffer);
     
     if(response == 0){ // updates the client (logged in)
-        client._UID = UID;
+        strcpy(client._UID, UID);
         strcpy(client._password, password);
         loggedIn = true;
     }
@@ -81,7 +63,7 @@ int open_(char *buffer){
     fsize = ftell(file);
     fseek(file, 0L, SEEK_SET);
 
-    sprintf(buffer, "OPA %d %s %s %d %d %s %d ", client._UID, client._password, name, start_value, timeactive, asset_fname, fsize);
+    sprintf(buffer, "OPA %s %s %s %d %d %s %d ", client._UID, client._password, name, start_value, timeactive, asset_fname, fsize);
 
     response=send_tcp_request(buffer, 1);
     fclose(file);
@@ -94,7 +76,7 @@ int close_(char *buffer){
         printf("Invalid input format\n");
         return 0;
     }
-    sprintf(buffer, "CLS %d %s %d\n", client._UID, client._password, AID);
+    sprintf(buffer, "CLS %s %s %d\n", client._UID, client._password, AID);
     response = send_tcp_request(buffer,0);
     return response;
 }
@@ -107,7 +89,7 @@ int myauctions(char *buffer) {
         return 0;
     }
 
-    sprintf(buffer, "LMA %d\n", client._UID);
+    sprintf(buffer, "LMA %s\n", client._UID);
 
     response = send_udp_request(buffer);
 
@@ -123,7 +105,7 @@ int mybids(char *buffer) {
     }
     
 
-    sprintf(buffer, "LMB %d\n", client._UID);
+    sprintf(buffer, "LMB %s\n", client._UID);
 
     response = send_udp_request(buffer);
 
@@ -166,7 +148,7 @@ int bid(char *buffer){
         printf("Invalid input format\n");
         return 0;
     }
-    sprintf(buffer, "BID %d %s %s %d\n", client._UID, client._password, AID, value);
+    sprintf(buffer, "BID %s %s %s %d\n", client._UID, client._password, AID, value);
 
     response = send_tcp_request(buffer,0);
 
@@ -202,7 +184,7 @@ int logout(char *buffer){
         return 1;
     }
 
-    sprintf(buffer, "LOU %d %s\n", client._UID, client._password);
+    sprintf(buffer, "LOU %s %s\n", client._UID, client._password);
 
     response = send_udp_request(buffer);
 
@@ -224,7 +206,7 @@ int unregister(char *buffer){
         return 1;
     }
 
-    sprintf(buffer, "UNR %d %s\n", client._UID, client._password);
+    sprintf(buffer, "UNR %s %s\n", client._UID, client._password);
 
     response = send_udp_request(buffer);
      if(response == 1){ //updates the status of the client

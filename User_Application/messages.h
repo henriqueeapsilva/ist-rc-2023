@@ -1,10 +1,7 @@
 #ifndef RESPONSE_MESSAGES_H
 #define RESPONSE_MESSAGES_H
 
-
-#include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
+#include "../utils/utils.h"
 
 // Define a structure to hold function pointers
 struct ResponseMessages
@@ -36,11 +33,11 @@ struct ResponseMessages
     const char *(*ROA_NLG)();
 
     const char *(*RCL_OK)();
-    const char *(*RCL_NOK)(int UID);
+    const char *(*RCL_NOK)(char *UID);
     const char *(*RCL_NLG)();
     const char *(*RCL_EAU)(char *AID);
-    const char *(*RCL_EOW)(int UID);
-    const char *(*RCL_END)(char *AID, int UID);
+    const char *(*RCL_EOW)(char *UID);
+    const char *(*RCL_END)(char *AID, char *UID);
 
     const char *(*RSA_NOK)();
     const char *(*RSA_OK)(int fsize, char *filename);
