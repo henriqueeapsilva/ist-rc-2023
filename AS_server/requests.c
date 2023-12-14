@@ -48,6 +48,38 @@ int open_handler(int fd, struct sockaddr_in addr,  char *buffer){
 
 
 int close_handler(int fd, struct sockaddr_in addr,  char *buffer){
+    char UID[7];
+    char password[9];
+    char AID[3];
+
+    if (sscanf(buffer, "%*s %s %s %s", UID, password, AID) != 3) {
+        send_reply(fd, addr, Messages.CLS_ERR());
+        return 1;
+    }
+    if (is_valid_uid(UID) == 0 || is_valid_password(password) == 0 || is_valid_aid(AID) == 0) {
+        send_reply(fd, addr, Messages.CLS_ERR());
+        return 1;
+    }
+    if(!user_is_logged(UID)){
+        send_reply(fd, addr, Messages.CLS_NLG());
+        return 1;
+    }
+    if(!is_auction(AID)){
+        send_reply(fd, addr, Messages.CLS_EAU());
+        return 1;
+    }
+    if(!check_user_auction(UID, AID)){
+        send_reply(fd, addr, Messages.CLS_EOW());
+        return 1;
+    }
+    if(is_auction_finished(AID)){
+        send_reply(fd, addr, Messages.CLS_END());
+        return 1;
+    }
+    else {
+        close_auction(AID);
+        send_reply(fd, addr, Messages.CLS_OK());
+    }
     return 0;
 }
 
@@ -73,6 +105,43 @@ int show_asset_handler(int fd, struct sockaddr_in addr,  char *buffer){
 
 
 int bid_handler(int fd, struct sockaddr_in addr,  char *buffer){
+    char UID[7];
+    char password[9];
+    char AID[3];
+    int value;
+
+    if (sscanf(buffer, "%*s %s %s %s %d", UID, password, AID, &value) != 4) {
+        send_reply(fd, addr, Messages.BID_ERR());
+        return 1;
+    }
+    if (is_valid_uid(UID) == 0 || is_valid_password(password) == 0 || is_valid_aid(AID) == 0) {
+        send_reply(fd, addr, Messages.BID_ERR());
+        return 1;
+    }
+    if(!is_auction(AID)){
+        send_reply(fd, addr, Messages.BID_NOK());
+        return 1;
+    }
+    if(is_auction_finished(AID)){
+        send_reply(fd, addr, Messages.BID_NOK());
+        return 1;
+    }
+    if(!user_is_logged(UID)){
+        send_reply(fd, addr, Messages.BID_NLG());
+        return 1;
+    }
+    if(check_user_auction(UID, AID)){
+        send_reply(fd, addr, Messages.BID_ILG());
+        return 1;
+    }
+    if(is_the_higher_bid(AID, value)){
+        send_reply(fd, addr, Messages.BID_REF());
+        return 1;
+    }
+    else {
+        return 1;
+    }
+
     return 0;
     }
 

@@ -9,6 +9,7 @@
 #define DIR_USER "../ASDIR/USERS" 
 #define DIR_AUCTION "../ASDIR/AUCTIONS"
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -31,6 +32,7 @@ extern char *asport;
 
 int is_valid_uid(char *uid);
 int is_valid_password(const char *password);
+int is_valid_aid(char *aid);
 
 
 #endif
