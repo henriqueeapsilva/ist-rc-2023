@@ -316,7 +316,7 @@ void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_f
     fclose(START_file);
 
     // create ASSET file
-    sprintf(auction_dir_name, "%s/%s/%S" ,DIR_AUCTION, AID, "ASSET");
+    sprintf(auction_dir_name, "%s/%s/%s" ,DIR_AUCTION, AID, "ASSET");
     mkdir(auction_dir_name, 0700);  
 
     sprintf(auction_ASSET_dir, "%s/%s/ASSET/%s.txt" ,DIR_AUCTION, AID, asset_fname);
