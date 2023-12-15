@@ -12,13 +12,11 @@ int login_handler(int fd, struct sockaddr_in addr,  char *buffer){
 
     if (sscanf(buffer, "%*s %s %s", UID, password) != 2) {
         send_reply(fd, addr, Messages.LIN_ERR());
-        return 1;
     }
-    if (is_valid_uid(UID) == 1 || is_valid_password(password) == 1) {
+    else if (is_valid_uid(UID) == 1 || is_valid_password(password) == 1) {
         send_reply(fd, addr, Messages.LIN_ERR());
-        return 1;
     }
-    if(!user_is_registed(UID)){
+    else if(!user_is_registed(UID)){
         resgister_user(UID, password);
         send_reply(fd, addr, Messages.LIN_REG());
     } else {
@@ -40,14 +38,9 @@ int logout_handler(int fd, struct sockaddr_in addr,  char *buffer){
 
     if (sscanf(buffer, "%*s %s %s", UID, password) != 2) {
         send_reply(fd, addr, Messages.LOU_ERR());
-        return 1;
-    }
-    if (is_valid_uid(UID) == 1 || is_valid_password(password) == 1) {
+    } else if (is_valid_uid(UID) == 1 || is_valid_password(password) == 1) {
         send_reply(fd, addr, Messages.LOU_ERR());
-        return 1;
-    }
-
-    if(!user_is_registed(UID)){
+    } else if(!user_is_registed(UID)){
         send_reply(fd, addr, Messages.LOU_UNR());
     } else if(!user_is_logged(UID)){
         send_reply(fd, addr, Messages.LOU_NOK());
@@ -66,13 +59,9 @@ int unregister_handler(int fd, struct sockaddr_in addr,  char *buffer){
 
     if (sscanf(buffer, "%*s %s %s", UID, password) != 2) {
         send_reply(fd, addr, Messages.UNR_ERR());
-        return 1;
-    }
-    if (is_valid_uid(UID) == 1 || is_valid_password(password) == 1) {
+    } else if (is_valid_uid(UID) == 1 || is_valid_password(password) == 1) {
         send_reply(fd, addr, Messages.UNR_ERR());
-        return 1;
-    }
-    if(!user_is_logged(UID)){
+    } else if(!user_is_logged(UID)){
         send_reply(fd, addr, Messages.UNR_NOK());
     } else if(!user_is_registed(UID)){
         send_reply(fd, addr, Messages.UNR_UNR());
@@ -230,35 +219,27 @@ int bid_handler(int fd, struct sockaddr_in addr,  char *buffer){
 
     if (sscanf(buffer, "%*s %s %s %s %d", UID, password, AID, &value) != 4) {
         send_reply(fd, addr, Messages.BID_ERR());
-        return 1;
     }
-    if (is_valid_uid(UID) == 0 || is_valid_password(password) == 0 || is_valid_aid(AID) == 0) {
+    else if (is_valid_uid(UID) == 0 || is_valid_password(password) == 0 || is_valid_aid(AID) == 0) {
         send_reply(fd, addr, Messages.BID_ERR());
-        return 1;
     }
-    if(!is_auction(AID)){
+    else if(!is_auction(AID)){
         send_reply(fd, addr, Messages.BID_NOK());
-        return 1;
     }
-    if(is_auction_finished(AID)){
+    else if(is_auction_finished(AID)){
         send_reply(fd, addr, Messages.BID_NOK());
-        return 1;
     }
-    if(!user_is_logged(UID)){
+    else if(!user_is_logged(UID)){
         send_reply(fd, addr, Messages.BID_NLG());
-        return 1;
     }
-    if(check_user_auction(UID, AID)){
+    else if(check_user_auction(UID, AID)){
         send_reply(fd, addr, Messages.BID_ILG());
-        return 1;
     }
-    if(is_the_higher_bid(AID, value)){
+    else if(is_the_higher_bid(AID, value)){
         send_reply(fd, addr, Messages.BID_REF());
-        return 1;
     }
     else{
         make_bid(UID, AID, value);
-        return 1;
     }
     return 0;
 }
