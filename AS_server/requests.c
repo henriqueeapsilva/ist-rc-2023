@@ -151,18 +151,47 @@ int close_handler(int fd, struct sockaddr_in addr,  char *buffer){
 
 
 int myauctions_handler(int fd, struct sockaddr_in addr,  char *buffer){
-    
+    char UID[7];
+
+    if (sscanf(buffer, "%*s %s", UID) != 1) {
+        send_reply(fd, addr, Messages.LMA_ERR());
+        return 1;
+    } else if (is_valid_uid(UID) == 1) {
+        send_reply(fd, addr, Messages.LMA_ERR());
+    } else if (!user_is_logged(UID)){
+        send_reply(fd, addr, Messages.LMB_NLG());
+    } else if(isHostedEmpty(UID) == 1){
+        send_reply(fd, addr, Messages.LMB_NOK());
+    } else {
+        strcpy(buffer, getAuctionsUser(UID));
+        send_reply(fd, addr, Messages.LMB_OK(buffer));    
+    }
     return 0;
 }
 
 
 int mybids_handler(int fd, struct sockaddr_in addr,  char *buffer){
+    char UID[7];
+
+    if (sscanf(buffer, "%*s %s", UID) != 1) {
+        send_reply(fd, addr, Messages.LMB_ERR());
+        return 1;
+    } else if (is_valid_uid(UID) == 1) {
+        send_reply(fd, addr, Messages.LMB_ERR());
+    } else if (!user_is_logged(UID)){
+        send_reply(fd, addr, Messages.LMB_NLG());
+    } else if(isBiddedEmpty(UID) == 1){
+        send_reply(fd, addr, Messages.LMB_NOK());
+    } else {
+        strcpy(buffer, getBidsUser(UID));
+        send_reply(fd, addr, Messages.LST_OK(buffer));    
+    }
     return 0;
     }
 
 
 int list_handler(int fd, struct sockaddr_in addr,  char *buffer){
-    if(isAuctionsEmpty() == 0){
+    if(isAuctionsEmpty() == 1){
         send_reply(fd, addr, Messages.LST_NOK());
     } else {
         strcpy(buffer, getAuctionStates());

@@ -72,12 +72,8 @@ bool is_directory(const char *path){
     return stat(path, &sa) == 0 && S_ISDIR(sa.st_mode);
 }
 
-int isAuctionsEmpty() {
-    char auctions_dir_name[50];
-
-    sprintf(auctions_dir_name, "%s" ,DIR_AUCTION);
-
-    DIR *dir = opendir(auctions_dir_name);
+int isDirectoryEmpty(char *path) {
+    DIR *dir = opendir(path);
 
     if (dir == NULL) {
         printf("opendir");
@@ -89,6 +85,30 @@ int isAuctionsEmpty() {
     closedir(dir);
 
     return entry == NULL; // Return 0 if entry is not NULL (directory is not empty), 1 otherwise
+}
+
+int isAuctionsEmpty(){
+     char auctions_dir_name[50];
+
+    sprintf(auctions_dir_name, "%s" ,DIR_AUCTION);
+
+    return isDirectoryEmpty(auctions_dir_name);
+}
+
+int isBiddedEmpty(char *UID){
+    char bidded_dir_name[50];
+
+    sprintf(bidded_dir_name, "%s/%s/%s" ,DIR_USER, UID, "BIDDED");
+
+    return isDirectoryEmpty(bidded_dir_name);
+}
+
+int isHostedEmpty(char *UID){
+    char bidded_dir_name[50];
+
+    sprintf(bidded_dir_name, "%s/%s/%s" ,DIR_USER, UID, "HOSTED");
+
+    return isDirectoryEmpty(bidded_dir_name);
 }
 
 char* getAuctionStates() {
@@ -144,6 +164,111 @@ char* getAuctionStates() {
     return buffer;
 }
 
+char *getBidsUser(char *UID){
+    char bidded_dir_name[50];
+
+    sprintf(bidded_dir_name, "%s/%s/%s" ,DIR_USER, UID, "BIDDED");
+
+    DIR *dir = opendir(bidded_dir_name);
+
+    if (dir == NULL) {
+        perror("opendir");
+        exit(EXIT_FAILURE);
+    }
+
+    // Allocate a buffer to store the results
+    size_t bufferSize = MAX_BUFFER_SIZE; // Adjust the size as needed
+    char *buffer = (char *)malloc(bufferSize);
+    if (buffer == NULL) {
+        closedir(dir);
+        perror("malloc");
+        exit(EXIT_FAILURE); // Error allocating memory
+    }
+
+    // Initialize the buffer
+    buffer[0] = '\0';
+
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue; // Skip "." and ".." entries
+        }
+
+        // Construct the path of the potential END file
+        char filePath[1024];
+        snprintf(filePath, sizeof(filePath), "%s/%s/END_%s.txt", DIR_AUCTION, entry->d_name, entry->d_name);
+
+        // Check if the END file exists
+        FILE *endFile = fopen(filePath, "r");
+        if (endFile != NULL) {
+            // Append AID and state to the buffer
+            strcat(buffer, entry->d_name); 
+            strcat(buffer, " 0 "); 
+            fclose(endFile);
+        } else {
+            // Auction is active (state 1)
+            strcat(buffer, entry->d_name); 
+            strcat(buffer, " 1 "); 
+        }
+    }
+
+    closedir(dir);
+
+    return buffer;
+}
+
+char *getAuctionsUser(char *UID){
+    char bidded_dir_name[50];
+
+    sprintf(bidded_dir_name, "%s/%s/%s" ,DIR_USER, UID, "HOSTED");
+
+    DIR *dir = opendir(bidded_dir_name);
+
+    if (dir == NULL) {
+        perror("opendir");
+        exit(EXIT_FAILURE);
+    }
+
+    // Allocate a buffer to store the results
+    size_t bufferSize = MAX_BUFFER_SIZE; // Adjust the size as needed
+    char *buffer = (char *)malloc(bufferSize);
+    if (buffer == NULL) {
+        closedir(dir);
+        perror("malloc");
+        exit(EXIT_FAILURE); // Error allocating memory
+    }
+
+    // Initialize the buffer
+    buffer[0] = '\0';
+
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue; // Skip "." and ".." entries
+        }
+
+        // Construct the path of the potential END file
+        char filePath[1024];
+        snprintf(filePath, sizeof(filePath), "%s/%s/END_%s.txt", DIR_AUCTION, entry->d_name, entry->d_name);
+
+        // Check if the END file exists
+        FILE *endFile = fopen(filePath, "r");
+        if (endFile != NULL) {
+            // Append AID and state to the buffer
+            strcat(buffer, entry->d_name); 
+            strcat(buffer, " 0 "); 
+            fclose(endFile);
+        } else {
+            // Auction is active (state 1)
+            strcat(buffer, entry->d_name); 
+            strcat(buffer, " 1 "); 
+        }
+    }
+
+    closedir(dir);
+
+    return buffer;
+}
 
 bool user_is_registed(char *UID){
     char user_dir_name[50];

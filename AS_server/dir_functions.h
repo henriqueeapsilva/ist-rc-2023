@@ -26,9 +26,20 @@ void log_out_user(char *UID);
 
 void unr_user(char *UID);
 
+int isDirectoryEmpty(char *path);
+
 int isAuctionsEmpty();
 
-char* getAuctionStates(); 
+int isHostedEmpty(char *UID);
+
+int isBiddedEmpty(char *UID);
+
+char* getAuctionStates();
+
+char *getAuctionsUser(char *UID);
+
+char *getBidsUser(char *UID);
+
 
 void make_bid(char *UID, char *AID, int bid);
 
