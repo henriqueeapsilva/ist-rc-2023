@@ -204,3 +204,17 @@ void close_auction(char *AID){
     FILE *END_file = fopen(auction_END_dir, "w");
     fprintf(END_file, "%s %ld", end_datetime, auction_time);
 }
+
+void make_bid(char *UID, char *AID, int bid){
+    char user_bid_dir[50];
+    char auction_bid_dir[50];
+
+    sprintf(user_bid_dir, "%s/%s/%s/%s.txt" ,DIR_USER, UID, "BIDDED", AID);
+    sprintf(auction_bid_dir, "%s/%s/BIDS/%d.txt" ,DIR_AUCTION, AID, bid);
+
+    FILE *user_bid_file = fopen(user_bid_dir, "w");
+    FILE *auction_bid_file = fopen(auction_bid_dir, "w");
+
+    fclose(user_bid_file);
+    fclose(auction_bid_file);
+}

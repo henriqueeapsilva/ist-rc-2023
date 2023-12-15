@@ -25,3 +25,5 @@ void log_client(char *UID);
 void log_out_user(char *UID);
 
 void unr_user(char *UID);
+
+void make_bid(char *UID, char *AID, int bid);
