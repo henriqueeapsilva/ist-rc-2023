@@ -135,7 +135,15 @@ int main(int argc, char **argv) {
             }
 
             // Receive data from the TCP client
-            ssize_t bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
+            ssize_t bytes_received;
+            int a=0;
+            int i=0;
+            while ((bytes_received = recv(client_socket, &buffer[i], 1, 0)) > 0)
+            {
+            if (buffer[i] == ' ') a++;
+            if (a == 8)break;
+            i++;
+            }
             if (bytes_received == -1) {
                 perror("Error receiving TCP data");
                 close(udp_socket);
@@ -144,7 +152,7 @@ int main(int argc, char **argv) {
                 exit(EXIT_FAILURE);
             }
 
-            buffer[bytes_received] = '\0';
+            buffer[i] = '\0';
 
             if (verbose) {
                 printf("Received TCP message: %s\n", buffer);

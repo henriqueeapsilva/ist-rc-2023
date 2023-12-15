@@ -18,18 +18,18 @@ int login(char *buffer){
 
 
     // Parse UID and password from the buffer
-    if (sscanf(buffer, "%*s %s %8s", UID, password) != 2) {
+    if (sscanf(buffer, "%*s %s %s", UID, password) != 2) {
         printf("Invalid input format\n");
         return 1;
     }
 
     // Check UID and password formats
-    if (!is_valid_uid(UID)) {
+    if (is_valid_uid(UID) == 1) {
         printf("Invalid UID format\n");
         return 1;
     }
 
-    if (!is_valid_password(password)) {
+    if (is_valid_password(password) == 1) {
         printf("Invalid password format\n");
         return 1;
     }
