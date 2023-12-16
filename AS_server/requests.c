@@ -109,27 +109,21 @@ int close_handler(int fd, struct sockaddr_in addr,  char *buffer){
 
     if (sscanf(buffer, "%*s %s %s %s", UID, password, AID) != 3) {
         send_reply(fd, addr, Messages.CLS_ERR());
-        return 1;
     }
     else if (is_valid_uid(UID) == 1 || is_valid_password(password) == 1 || is_valid_aid(AID) == 0) {
         send_reply(fd, addr, Messages.CLS_ERR());
-        return 1;
     }
     else if(!user_is_logged(UID)){
         send_reply(fd, addr, Messages.CLS_NLG());
-        return 1;
     }
     else if(!is_auction(AID)){
         send_reply(fd, addr, Messages.CLS_EAU());
-        return 1;
     }
     else if(!check_user_auction(UID, AID)){
         send_reply(fd, addr, Messages.CLS_EOW());
-        return 1;
     }
     else if(is_auction_finished(AID)){
         send_reply(fd, addr, Messages.CLS_END());
-        return 1;
     }
     else {
         close_auction(AID);
@@ -194,19 +188,15 @@ int show_asset_handler(int fd, struct sockaddr_in addr,  char *buffer){
     char AID[3];
     if (sscanf(buffer, "%*s %s", AID) != 1) {
         send_reply(fd, addr, Messages.SAS_ERR());
-        return 1;
     }
     else if (is_valid_aid(AID) == 0) {
         send_reply(fd, addr, Messages.SAS_ERR());
-        return 1;
     }
     else if (!is_auction(AID)) {
         send_reply(fd, addr, Messages.SAS_NOK());
-        return 1;
     }
     else {
-        send_reply(fd, addr, Messages.SAS_OK(buffer));
-        return 1;
+        send_asset(fd, AID);
     }
     return 0;
     }   

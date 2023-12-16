@@ -416,6 +416,40 @@ void make_bid(char *UID, char *AID, int bid){
     fclose(auction_bid_file);
 }
 
+void send_asset(int fd, char *AID) {
+    char asset_name[20];
+    char asset_path[50];
+    char asset_size[10];
+    int asset_size_int;
+    char *message="RSA OK ";
+
+    sprintf(asset_path, "%s/%s/ASSET", DIR_AUCTION, AID);
+
+    DIR *asset_dir = opendir(asset_path);
+    struct dirent *asset_file_entry = readdir(asset_dir);
+    strcpy(asset_name, asset_file_entry->d_name);
+
+
+    sprintf(asset_path, "%s/%s/ASSET/%s", DIR_AUCTION, AID, asset_name);
+    FILE *asset_file = fopen(asset_path, "r");
+
+    fseek(asset_file, 0, SEEK_END);
+    asset_size_int = ftell(asset_file);
+    rewind(asset_file);
+
+    write(fd, message, strlen(message) + 1);
+
+    write(fd, asset_name, strlen(asset_name) + 1);
+
+    write(fd, asset_size, strlen(asset_size) + 1);
+
+    sendfile(fd, fileno(asset_file), NULL, asset_size_int);
+
+    fclose(asset_file);
+
+    closedir(asset_dir);
+}
+
 void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_fname, int start_value, int timeactive, int fsize){
     char buffer[fsize];
     char user_HOSTED_file[50];
@@ -436,7 +470,7 @@ void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_f
     FILE *START_file = fopen(auction_START_dir, "w");
     time(&start_fulltime);
     struct tm *localTimeStruct = localtime(&start_fulltime);
-    strftime(start_datetime, 20, "%Y-%m-%dT%H:%M:%S", localTimeStruct);
+    strftime(start_datetime, 20, "%Y-%m-%d %H:%M:%S", localTimeStruct);
     fprintf(START_file, "%s %s %s %d %d %s %ld", UID, name, asset_fname, start_value, timeactive, start_datetime,start_fulltime);
     fclose(START_file);
 
@@ -450,7 +484,7 @@ void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_f
     int bytes_received;
     while (fs < fsize)
     {
-        bytes_received = recv(tcp_fd, buffer, fsize, 0);
+        bytes_received = read(tcp_fd, buffer, fsize);
         if (bytes_received == -1) /*error*/
             exit(1);
         fwrite(buffer, 1, bytes_received, ASSET_file);

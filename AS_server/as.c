@@ -7,7 +7,7 @@ bool verbose = false;
 char *asport = "58045";
 
 int main(int argc, char **argv) {
-    int opt, port;
+    int opt, port, spaces;
     char buffer[MAX_BUFFER_SIZE];
     char command[20];
 
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
             buffer[bytes_received] = '\0';
 
             if (verbose) {
-                printf("Received UDP message from %s:%d\n", inet_ntoa(client_address.sin_addr),
+                printf("Received UDP message: %sFrom %s:%d\n",buffer ,inet_ntoa(client_address.sin_addr),
                        ntohs(client_address.sin_port));
             }
 
@@ -133,17 +133,43 @@ int main(int argc, char **argv) {
             if (verbose) {
                 printf("Accepted TCP connection\n");
             }
-
             // Receive data from the TCP client
             ssize_t bytes_received;
-            int a=0;
-            int i=0;
-            while ((bytes_received = recv(client_socket, &buffer[i], 1, 0)) > 0)
-            {
-            if (buffer[i] == ' ') a++;
-            if (a == 8)break;
-            i++;
+            int num_spaces=0, total_received = 0;
+            char command[4];
+            while (total_received < 3) { // cmd
+                bytes_received = recv(client_socket, buffer + total_received, 1, 0);
+                if(bytes_received==-1) exit(1);
+                total_received += bytes_received;
             }
+            buffer[total_received] = '\0';
+            stpcpy(command, buffer);
+
+            if(strcmp(command, "OPA") == 0) spaces = 8;
+            else spaces = 0;
+
+
+             while(spaces == 0 || spaces > num_spaces) {
+                bytes_received=recv(client_socket, buffer + total_received, 1, 0);
+                
+                if(bytes_received==-1) exit(1);
+                
+                total_received += bytes_received;
+                
+                buffer[total_received] = '\0';
+                
+                if (buffer[total_received-1] == ' ') {
+                    if(++num_spaces == spaces) {
+                        buffer[total_received-1] = '\0';
+                        break;
+                    }
+                }
+                if (buffer[total_received-1] == '\n' || buffer[total_received-1] == '\0') {
+                    buffer[total_received] = '\0';
+                    break;
+                }
+            }
+    
             if (bytes_received == -1) {
                 perror("Error receiving TCP data");
                 close(udp_socket);
@@ -152,16 +178,12 @@ int main(int argc, char **argv) {
                 exit(EXIT_FAILURE);
             }
 
-            buffer[i] = '\0';
-
-            if (verbose) {
+             if (verbose) {
                 printf("Received TCP message: %s\n", buffer);
             }
 
-            // access the command to execute
-            sscanf(buffer, "%s", command);
             //executes the command
-            execute_request(tcp_socket, tcp_server_address ,command, buffer);
+            execute_request(client_socket, tcp_server_address ,command, buffer);
 
             // Close the client socket
             close(client_socket);

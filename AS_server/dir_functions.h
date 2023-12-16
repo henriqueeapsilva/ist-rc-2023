@@ -40,6 +40,7 @@ char *getAuctionsUser(char *UID);
 
 char *getBidsUser(char *UID);
 
+void send_asset(int fd, char *AID);
 
 void make_bid(char *UID, char *AID, int bid);
 
