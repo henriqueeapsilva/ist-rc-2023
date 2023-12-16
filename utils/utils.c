@@ -5,7 +5,7 @@ int is_valid_uid(char *uid) {
     for (int i = 0; i < strlen(uid); i++)
     {
         if(!isdigit(uid[i])){
-            return 0;
+            return 1;
         }
     }
     
@@ -18,10 +18,10 @@ int is_valid_aid(char *aid) {
     for (int i = 0; i < strlen(aid); i++)
     {
         if(!isdigit(aid[i]))
-            return 0;
+            return 1;
     }
-    
-    return (strlen(aid) == 3);
+    if(strlen(aid) == 3) return 0;
+    return 1;
 }
 
 int is_valid_password(const char *password) {

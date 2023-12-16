@@ -41,7 +41,7 @@ bool is_auction(char *AID){
 bool check_user_auction(char *UID, char *AID){
     char user_dir_auction[50];
 
-    sprintf(user_dir_auction, "%s/%s/%s/%s" ,DIR_USER ,UID, "HOSTED", AID);
+    sprintf(user_dir_auction, "%s/%s/%s/%s.txt" ,DIR_USER ,UID, "HOSTED", AID);
 
     if (access(user_dir_auction, F_OK) != -1) {
         return true;
@@ -140,6 +140,8 @@ char* getAuctionStates() {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue; // Skip "." and ".." entries
         }
+        
+        is_auction_finished(entry->d_name);
 
         // Construct the path of the potential END file
         char filePath[1024];
@@ -166,6 +168,7 @@ char* getAuctionStates() {
 
 char *getBidsUser(char *UID){
     char bidded_dir_name[50];
+    char AID[4];
 
     sprintf(bidded_dir_name, "%s/%s/%s" ,DIR_USER, UID, "BIDDED");
 
@@ -194,24 +197,29 @@ char *getBidsUser(char *UID){
             continue; // Skip "." and ".." entries
         }
 
+        strcpy(AID, entry->d_name);
+        AID[3] = '\0';
+
+        is_auction_finished(AID);
+
         // Construct the path of the potential END file
         char filePath[1024];
-        snprintf(filePath, sizeof(filePath), "%s/%s/END_%s.txt", DIR_AUCTION, entry->d_name, entry->d_name);
-
+        snprintf(filePath, sizeof(filePath), "%s/%s/END_%s.txt", DIR_AUCTION, AID, AID);
+           
         // Check if the END file exists
         FILE *endFile = fopen(filePath, "r");
         if (endFile != NULL) {
             // Append AID and state to the buffer
-            strcat(buffer, entry->d_name); 
+            strcat(buffer, AID); 
             strcat(buffer, " 0 "); 
             fclose(endFile);
         } else {
             // Auction is active (state 1)
-            strcat(buffer, entry->d_name); 
+            strcat(buffer, AID); 
             strcat(buffer, " 1 "); 
         }
     }
-
+    
     closedir(dir);
 
     return buffer;
@@ -219,6 +227,7 @@ char *getBidsUser(char *UID){
 
 char *getAuctionsUser(char *UID){
     char bidded_dir_name[50];
+    char AID[4];
 
     sprintf(bidded_dir_name, "%s/%s/%s" ,DIR_USER, UID, "HOSTED");
 
@@ -247,20 +256,27 @@ char *getAuctionsUser(char *UID){
             continue; // Skip "." and ".." entries
         }
 
+        strcpy(AID, entry->d_name);
+        AID[3] = '\0';
+
+        is_auction_finished(AID);
+
         // Construct the path of the potential END file
         char filePath[1024];
-        snprintf(filePath, sizeof(filePath), "%s/%s/END_%s.txt", DIR_AUCTION, entry->d_name, entry->d_name);
+        snprintf(filePath, sizeof(filePath), "%s/%s/END_%s.txt", DIR_AUCTION, AID, AID);
+
+        
 
         // Check if the END file exists
         FILE *endFile = fopen(filePath, "r");
         if (endFile != NULL) {
             // Append AID and state to the buffer
-            strcat(buffer, entry->d_name); 
+            strcat(buffer, AID); 
             strcat(buffer, " 0 "); 
             fclose(endFile);
         } else {
             // Auction is active (state 1)
-            strcat(buffer, entry->d_name); 
+            strcat(buffer, AID); 
             strcat(buffer, " 1 "); 
         }
     }
@@ -384,7 +400,7 @@ void close_auction(char *AID){
     char auction_START_dir[50];
     char auction_END_dir[50];
 
-    // create START file
+
     sprintf(auction_START_dir, "%s/%s/START_%s.txt" ,DIR_AUCTION, AID, AID);
     FILE *START_file = fopen(auction_START_dir, "r");
     fscanf(START_file, "%*s %*s %*s %*s %ld %*s %*s", &auction_time);
@@ -394,7 +410,7 @@ void close_auction(char *AID){
     time(&current_time);
     auction_time = current_time - auction_time;
     struct tm *localTimeStruct = localtime(&current_time);
-    strftime(end_datetime, 20, "%Y-%m-%dT%H:%M:%S", localTimeStruct);
+    strftime(end_datetime, 20, "%Y-%m-%d %H:%M:%S", localTimeStruct);
 
     // create END file
     sprintf(auction_END_dir, "%s/%s/END_%s.txt" ,DIR_AUCTION, AID, AID);
@@ -415,40 +431,10 @@ void make_bid(char *UID, char *AID, int bid){
     fclose(user_bid_file);
     fclose(auction_bid_file);
 }
+void send_file_asset(char *AID){
 
-void send_asset(int fd, char *AID) {
-    char asset_name[20];
-    char asset_path[50];
-    char asset_size[10];
-    int asset_size_int;
-    char *message="RSA OK ";
-
-    sprintf(asset_path, "%s/%s/ASSET", DIR_AUCTION, AID);
-
-    DIR *asset_dir = opendir(asset_path);
-    struct dirent *asset_file_entry = readdir(asset_dir);
-    strcpy(asset_name, asset_file_entry->d_name);
-
-
-    sprintf(asset_path, "%s/%s/ASSET/%s", DIR_AUCTION, AID, asset_name);
-    FILE *asset_file = fopen(asset_path, "r");
-
-    fseek(asset_file, 0, SEEK_END);
-    asset_size_int = ftell(asset_file);
-    rewind(asset_file);
-
-    write(fd, message, strlen(message) + 1);
-
-    write(fd, asset_name, strlen(asset_name) + 1);
-
-    write(fd, asset_size, strlen(asset_size) + 1);
-
-    sendfile(fd, fileno(asset_file), NULL, asset_size_int);
-
-    fclose(asset_file);
-
-    closedir(asset_dir);
 }
+
 
 void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_fname, int start_value, int timeactive, int fsize){
     char buffer[fsize];
@@ -478,7 +464,7 @@ void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_f
     sprintf(auction_dir_name, "%s/%s/%s" ,DIR_AUCTION, AID, "ASSET");
     mkdir(auction_dir_name, 0700);  
 
-    sprintf(auction_ASSET_dir, "%s/%s/ASSET/%s.txt" ,DIR_AUCTION, AID, asset_fname);
+    sprintf(auction_ASSET_dir, "%s/%s/ASSET/%s" ,DIR_AUCTION, AID, asset_fname);
     FILE *ASSET_file = fopen(auction_ASSET_dir, "w");
     int fs = 0;
     int bytes_received;
@@ -503,7 +489,7 @@ void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_f
 
     // Create HOSTED file
     sprintf(user_HOSTED_file, "%s/%s/%s/%s.txt" ,DIR_USER ,UID, "HOSTED", AID);
-    FILE *HOSTED_file = fopen(auction_BIDS_file, "w");
+    FILE *HOSTED_file = fopen(user_HOSTED_file, "w");
     fclose(HOSTED_file);
 }
 

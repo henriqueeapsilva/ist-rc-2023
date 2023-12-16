@@ -77,12 +77,14 @@ int open_(char *buffer){
 }
 
 int close_(char *buffer){
-    int response, AID;
-    if (sscanf(buffer, "%*s %d", &AID) != 1) {
+    int response;
+    char AID[4];
+
+    if (sscanf(buffer, "%*s %s", AID) != 1) {
         printf("Invalid input format\n");
         return 0;
     }
-    sprintf(buffer, "CLS %s %s %d\n", client._UID, client._password, AID);
+    sprintf(buffer, "CLS %s %s %s\n", client._UID, client._password, AID);
     response = send_tcp_request(buffer,0);
     return response;
 }

@@ -1,4 +1,5 @@
 #include "../utils/utils.h"
+#include "messages.h"
 
 bool is_the_higher_bid(char *AID, int bid);
 
@@ -40,10 +41,10 @@ char *getAuctionsUser(char *UID);
 
 char *getBidsUser(char *UID);
 
-void send_asset(int fd, char *AID);
-
 void make_bid(char *UID, char *AID, int bid);
 
 void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_fname, int start_value, int timeactive, int fsize);
+
+void send_file_asset(char *AID);
 
 char *generate_random_number();
