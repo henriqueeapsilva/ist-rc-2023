@@ -191,7 +191,6 @@ int list_handler(int fd, struct sockaddr_in addr,  char *buffer){
 
 int show_asset_handler(int fd, struct sockaddr_in addr,  char *buffer){
     char AID[4];
-    char message[30];
 
     if (sscanf(buffer, "%*s %s", AID) != 1) {
         send_reply(fd, addr, Messages.SAS_ERR());
@@ -203,7 +202,27 @@ int show_asset_handler(int fd, struct sockaddr_in addr,  char *buffer){
         send_reply(fd, addr, Messages.SAS_NOK());
     }
     else {
-       // show asset
+        char asset_name[20];
+        char asset_path[50];
+        int asset_size_int;
+        char message[30];
+        sprintf(asset_path, "%s/%s/ASSET", DIR_AUCTION, AID);
+
+        DIR *asset_dir = opendir(asset_path);
+        struct dirent *asset_file_entry = readdir(asset_dir);
+        strcpy(asset_name, asset_file_entry->d_name);
+
+        sprintf(asset_path, "%s/%s/ASSET/%s", DIR_AUCTION, AID, asset_name);
+        FILE *asset_file = fopen(asset_path, "r");
+
+        fseek(asset_file, 0, SEEK_END);
+        asset_size_int = ftell(asset_file);
+        rewind(asset_file);
+        printf("%s %d\n",asset_name, asset_size_int);
+        sprintf(message, "%s %d ",asset_name, asset_size_int);
+        printf("%s\n",message);
+        send_reply(fd, addr, Messages.SAS_OK(message));
+        sendfile(fd, fileno(asset_file), NULL, asset_size_int);
     }
     return 0;
     }  
@@ -211,19 +230,17 @@ int show_asset_handler(int fd, struct sockaddr_in addr,  char *buffer){
 int bid_handler(int fd, struct sockaddr_in addr,  char *buffer){
     char UID[7];
     char password[9];
-    char AID[3];
+    char AID[4];
     int value;
-
+    
     if (sscanf(buffer, "%*s %s %s %s %d", UID, password, AID, &value) != 4) {
         send_reply(fd, addr, Messages.BID_ERR());
     }
     else if (is_valid_uid(UID) == 1 || is_valid_password(password) == 1 || is_valid_aid(AID) == 1) {
+        printf("1\n");
         send_reply(fd, addr, Messages.BID_ERR());
     }
-    else if(!is_auction(AID)){
-        send_reply(fd, addr, Messages.BID_NOK());
-    }
-    else if(is_auction_finished(AID)){
+    else if(!is_auction(AID) || is_auction_finished(AID)){
         send_reply(fd, addr, Messages.BID_NOK());
     }
     else if(!user_is_logged(UID)){
@@ -232,11 +249,12 @@ int bid_handler(int fd, struct sockaddr_in addr,  char *buffer){
     else if(check_user_auction(UID, AID)){
         send_reply(fd, addr, Messages.BID_ILG());
     }
-    else if(is_the_higher_bid(AID, value)){
+    else if(!is_the_higher_bid(AID, value)){
         send_reply(fd, addr, Messages.BID_REF());
     }
     else{
         make_bid(UID, AID, value);
+        send_reply(fd, addr, Messages.BID_OK());
     }
     return 0;
 }

@@ -12,7 +12,7 @@ bool is_the_higher_bid(char *AID, int bid){
     DIR *BID_dir = opendir(BIDS_dir_path);
 
     struct dirent *BID_file = readdir(BID_dir);
-    sscanf(BID_file -> d_name, "%d.txt", &highest_bid);
+    sscanf(BID_file -> d_name, "%d", &highest_bid);
     if (bid > highest_bid){
         return true;
     }
@@ -52,15 +52,16 @@ bool check_user_auction(char *UID, char *AID){
 bool is_auction_finished(char *AID){
     char auction_START_dir[50];
     char auction_END_dir[50];
-    time_t auction_time; 
+    time_t auction_time;
+    time_t auction_duration;
     sprintf(auction_END_dir, "%s/%s/END_%s.txt" ,DIR_AUCTION, AID, AID);
     if (access(auction_END_dir, F_OK) != -1) {
         return true;
     }
     sprintf(auction_START_dir, "%s/%s/START_%s.txt" ,DIR_AUCTION, AID, AID);
     FILE *file = fopen(auction_START_dir, "r");
-    fscanf(file, "%*s %*s %*s %*s %ld %*s %*s", &auction_time);
-    if (auction_time < time(NULL)){
+    fscanf(file, "%*s %*s %*s %*s %ld %*s %ld", &auction_duration, &auction_time);
+    if (auction_time+auction_duration > time(NULL)){
         close_auction(AID);
         return true;
     }
@@ -403,7 +404,7 @@ void close_auction(char *AID){
 
     sprintf(auction_START_dir, "%s/%s/START_%s.txt" ,DIR_AUCTION, AID, AID);
     FILE *START_file = fopen(auction_START_dir, "r");
-    fscanf(START_file, "%*s %*s %*s %*s %ld %*s %*s", &auction_time);
+    fscanf(START_file, "%*s %*s %*s %*s %*s %*s %ld", &auction_time);
     fclose(START_file);
 
     // calculate new auction time and end date
@@ -416,6 +417,7 @@ void close_auction(char *AID){
     sprintf(auction_END_dir, "%s/%s/END_%s.txt" ,DIR_AUCTION, AID, AID);
     FILE *END_file = fopen(auction_END_dir, "w");
     fprintf(END_file, "%s %ld", end_datetime, auction_time);
+    fclose(END_file);
 }
 
 void make_bid(char *UID, char *AID, int bid){
@@ -423,7 +425,7 @@ void make_bid(char *UID, char *AID, int bid){
     char auction_bid_dir[50];
 
     sprintf(user_bid_dir, "%s/%s/%s/%s.txt" ,DIR_USER, UID, "BIDDED", AID);
-    sprintf(auction_bid_dir, "%s/%s/BIDS/%d.txt" ,DIR_AUCTION, AID, bid);
+    sprintf(auction_bid_dir, "%s/%s/BIDS/%06d.txt" ,DIR_AUCTION, AID, bid);
 
     FILE *user_bid_file = fopen(user_bid_dir, "w");
     FILE *auction_bid_file = fopen(auction_bid_dir, "w");
@@ -483,7 +485,7 @@ void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_f
     mkdir(auction_BIDS_dir, 0700);
 
     // create BIDS file
-    sprintf(auction_BIDS_file, "%s/%s/BIDS/%d.txt" ,DIR_AUCTION, AID, start_value);
+    sprintf(auction_BIDS_file, "%s/%s/BIDS/%06d.txt" ,DIR_AUCTION, AID, start_value);
     FILE *BIDS_file = fopen(auction_BIDS_file, "w");
     fclose(BIDS_file);
 
