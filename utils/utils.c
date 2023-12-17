@@ -33,3 +33,8 @@ int is_valid_password(const char *password) {
     }
     return 0;
 }
+
+int is_valid_bid(int bid) {
+    if(0 < bid && bid <= 999999) return 0;
+    return 1;
+}

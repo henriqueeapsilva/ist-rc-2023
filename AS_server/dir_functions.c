@@ -478,14 +478,20 @@ void close_auction(char *AID){
 }
 
 void make_bid(char *UID, char *AID, int bid){
-    char user_bid_dir[50];
-    char auction_bid_dir[50];
+    char user_bid_dir[PATH_SIZE];
+    char auction_bid_dir[PATH_SIZE];
+    time_t bid_time;
+    char bid_date[PATH_SIZE];
 
     sprintf(user_bid_dir, "%s/%s/%s/%s.txt" ,DIR_USER, UID, "BIDDED", AID);
     sprintf(auction_bid_dir, "%s/%s/BIDS/%06d.txt" ,DIR_AUCTION, AID, bid);
 
     FILE *user_bid_file = fopen(user_bid_dir, "w");
     FILE *auction_bid_file = fopen(auction_bid_dir, "w");
+    time(&bid_time);
+    struct tm *localTimeStruct = localtime(&bid_time);
+    strftime(bid_date, 20, "%Y-%m-%d %H:%M:%S", localTimeStruct);
+    fprintf(auction_bid_file, "%s %06d %s %ld", UID, bid, bid_date, bid_time);
 
     fclose(user_bid_file);
     fclose(auction_bid_file);
@@ -502,6 +508,8 @@ void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_f
     char auction_BIDS_file[PATH_SIZE];
     char start_datetime[PATH_SIZE];
     time_t start_fulltime;
+    time_t bid_time;
+    char bid_date[PATH_SIZE];
 
     // create auction folder
     sprintf(auction_dir_name, "%s/%s" ,DIR_AUCTION, AID);
@@ -541,6 +549,11 @@ void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_f
     // create BIDS file
     sprintf(auction_BIDS_file, "%s/%s/BIDS/%06d.txt" ,DIR_AUCTION, AID, start_value);
     FILE *BIDS_file = fopen(auction_BIDS_file, "w");
+    time(&bid_time);
+    localTimeStruct = localtime(&bid_time);
+    strftime(bid_date, 20, "%Y-%m-%d %H:%M:%S", localTimeStruct);
+    fprintf(BIDS_file, "%s %06d %s %ld", UID, start_value, bid_date, bid_time);
+
     fclose(BIDS_file);
 
     // Create HOSTED file
