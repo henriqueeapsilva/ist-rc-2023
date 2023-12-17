@@ -4,15 +4,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+
 bool is_the_higher_bid(char *AID, int bid){
     char BIDS_dir_path[PATH_SIZE];
     int highest_bid;
+    struct dirent *BID_file;
 
     sprintf(BIDS_dir_path, "%s/%s/BIDS" ,DIR_AUCTION, AID);
     DIR *BID_dir = opendir(BIDS_dir_path);
 
-    struct dirent *BID_file = readdir(BID_dir);
-    sscanf(BID_file -> d_name, "%d", &highest_bid);
+    while ((BID_file = readdir(BID_dir))!=NULL){
+        sscanf(BID_file -> d_name, "%d", &highest_bid);
+    };
     if (bid > highest_bid){
         return true;
     }
@@ -118,6 +121,14 @@ int isHostedEmpty(char *UID){
     sprintf(bidded_dir_name, "%s/%s/%s" ,DIR_USER, UID, "HOSTED");
 
     return isDirectoryEmpty(bidded_dir_name);
+}
+
+int isBidsEmpty(char *AID){
+    char bids_dir_name[PATH_SIZE];
+
+    sprintf(bids_dir_name, "%s/%s/%s" ,DIR_AUCTION, AID, "BIDS");
+
+    return isDirectoryEmpty(bids_dir_name);
 }
 
 char* getAuctionStates() {
@@ -565,12 +576,12 @@ void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_f
 
 char *do_show_record(char *AID){
     char auc_dir_name[100];
-    char bidded_dir_name[PATH_SIZE];
+    char bidded_dir_name[200];
     char end_file_name[PATH_SIZE];
     char start_file_name[PATH_SIZE];
-    //char bid_file_path[PATH_SIZE];
+    char bid_file_path[PATH_SIZE];
     char auction_info[PATH_SIZE];
-    //char bid_info[100];
+    char bid_info[PATH_SIZE];
     char end_info[PATH_SIZE];
 
     sprintf(auc_dir_name, "%s/%s" ,DIR_AUCTION , AID);
@@ -580,18 +591,17 @@ char *do_show_record(char *AID){
 
 
     // start file information
-    char start_fulltime[50]; 
     char host_uid[7];
     char auc_name[50];
     char asset_fname[50];
     char start_value[7];
     char start_datetime[50];
+    char start_date[50];
     char timeactive[30];
 
     FILE *start_file = fopen(start_file_name, "r");
-    fscanf(start_file,  "%s %s %s %s %s %s %s", host_uid, auc_name, asset_fname, start_value, timeactive, start_datetime,start_fulltime);
-
-    sprintf(auction_info, "%s %s %s %s %s %s %s\n", host_uid, auc_name, asset_fname, start_value, timeactive, start_datetime,start_fulltime);
+    fscanf(start_file,  "%s %s %s %s %s %s %s", host_uid, auc_name, asset_fname, start_value, timeactive, start_date ,start_datetime);
+    sprintf(auction_info, "%s %s %s %s %s %s %s", host_uid, auc_name, asset_fname, start_value, start_date ,start_datetime, timeactive);
 
     char *buffer = (char *)malloc(strlen(auction_info) + 1);
     if (buffer == NULL) {
@@ -602,50 +612,58 @@ char *do_show_record(char *AID){
 
     strcat(buffer, auction_info);
 
-    /*// bids information
-    char UID[7]; 
+
+    // bids information
     char bid_value[7];
     char bid_datetime[50]; 
     char bid_sec_time[50];
+    char _start_value[7];
     int i = 0;
     
+
     DIR *dir = opendir(bidded_dir_name);
 
     if (dir == NULL) {
         perror("opendir");
         exit(EXIT_FAILURE);
     }
-    struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL) {
-        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
-            continue; 
+
+    if(isBidsEmpty(AID) == 1){
+
+        struct dirent *entry;
+        while ((entry = readdir(dir)) != NULL) {
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+                continue; 
+            }
+            if(entry == NULL ) break;
+
+            sscanf(entry->d_name, "%6s.txt", _start_value);
+            
+            if(atoi(_start_value) == atoi(start_value)) continue;
+       
+            sprintf(bid_file_path, "%s/%s", bidded_dir_name, entry->d_name);
+            FILE *bid_file = fopen(bid_file_path, "r");
+            fscanf(bid_file,  "%s %s %s %s", host_uid, bid_value, bid_datetime, bid_sec_time);
+            sprintf(bid_info, " B %s %s %s %s", host_uid, bid_value, bid_datetime, bid_sec_time);
+            i++;
+            buffer = realloc(buffer, strlen(auction_info) + strlen(bid_info)*i + 2);
+
+            strcat(buffer, bid_info);
         }
-
-        if(entry == NULL) break;
-
-        sprintf(bid_file_path, "%s/%s", bid_file_path, entry->d_name);
-        FILE *bid_file = fopen(bid_file_path, "r");
-        fscanf(bid_file,  "%s %s %s %s", UID, bid_value, bid_datetime, bid_sec_time);
-        sprintf(bid_info, "B %s %s %s %s\n", UID, bid_value, bid_datetime, bid_sec_time);
-        i++;
-        buffer = realloc(buffer, strlen(auction_info) + strlen(bid_info)*i + 2);
-
-        strcat(buffer, bid_info);
     }
-    */
-
     //end file information
     char end_date_time[50];
     char end_sec_time[50];
 
 
     FILE *end_file = fopen(end_file_name, "r");
-    fscanf(end_file,  "%s %s %*s", end_date_time, end_sec_time);
-    sprintf(end_info, "E %s %s", end_date_time, end_sec_time);
+    if(end_file == NULL) return buffer;
+
+    fscanf(end_file,  "%s %s", end_date_time, end_sec_time);
+    sprintf(end_info, " E %s %s", end_date_time, end_sec_time);
 
     buffer = realloc(buffer, strlen(auction_info) + strlen(end_info) + 2);
     strcat(buffer, end_info);
-
 
     return buffer;
 }   

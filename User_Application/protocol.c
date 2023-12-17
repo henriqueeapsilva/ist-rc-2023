@@ -558,7 +558,7 @@ int send_tcp_request(char *buffer, int havefile)
             break;
         i++;
     }
-    if (havefile == 2)
+    if (havefile == 2 && buffer[i]!='N' && buffer[i]!='E')
     {
         int filesize;
         char filename[256];

@@ -35,6 +35,8 @@ int isHostedEmpty(char *UID);
 
 int isBiddedEmpty(char *UID);
 
+int isBidsEmpty(char *AID);
+
 char* getAuctionStates();
 
 char *getAuctionsUser(char *UID);
