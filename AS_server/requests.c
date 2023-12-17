@@ -1,5 +1,6 @@
 #include "requests.h"
 
+
 void send_reply(int fd, struct sockaddr_in addr,const char *reply){
      if(sendto(fd, reply, strlen(reply), 0, (struct sockaddr*)&addr,sizeof(addr)) == -1) exit(1);
 }
@@ -94,7 +95,10 @@ int open_handler(int fd, struct sockaddr_in addr,  char *buffer){
         return 1;
     }
     else{
-        char *AID = generate_random_number();
+        char *AID =getNextAID();
+        if(strcmp(AID, "nok") == 0){
+            send_reply(fd, addr, Messages.OPA_NOK());
+        }
         register_auction(fd, UID, AID, name, asset_fname, start_value, timeactive, asset_fsize);
         send_reply(fd, addr, Messages.OPA_OK(AID));
         return 1;
@@ -106,11 +110,9 @@ int close_handler(int fd, struct sockaddr_in addr,  char *buffer){
     char UID[7];
     char password[9];
     char AID[4];
-    printf("buffer: %s\n", buffer);
     if (sscanf(buffer, "%*s %6s %8s %3s\n", UID, password, AID) != 3) {
         send_reply(fd, addr, Messages.CLS_ERR());
     }
-    printf("UID:%s password: %s AID: %s\n", UID, password, AID);
 
     if (is_valid_uid(UID) == 1 ) {
         send_reply(fd, addr, Messages.CLS_ERR());
@@ -148,7 +150,7 @@ int myauctions_handler(int fd, struct sockaddr_in addr,  char *buffer){
         send_reply(fd, addr, Messages.LMA_ERR());
     } else if (!user_is_logged(UID)){
         send_reply(fd, addr, Messages.LMA_NLG());
-    } else if(isHostedEmpty(UID) == 1){
+    } else if(isHostedEmpty(UID) == 0){
         send_reply(fd, addr, Messages.LMA_NOK());
     } else {
         strcpy(buffer, getAuctionsUser(UID));
@@ -168,7 +170,7 @@ int mybids_handler(int fd, struct sockaddr_in addr,  char *buffer){
         send_reply(fd, addr, Messages.LMB_ERR());
     } else if (!user_is_logged(UID)){
         send_reply(fd, addr, Messages.LMB_NLG());
-    } else if(isBiddedEmpty(UID) == 1){
+    } else if(isBiddedEmpty(UID) == 0){
         send_reply(fd, addr, Messages.LMB_NOK());
     } else {
         strcpy(buffer, getBidsUser(UID));
@@ -179,7 +181,7 @@ int mybids_handler(int fd, struct sockaddr_in addr,  char *buffer){
 
 
 int list_handler(int fd, struct sockaddr_in addr,  char *buffer){
-    if(isAuctionsEmpty() == 1){
+    if(isAuctionsEmpty() == 0){
         send_reply(fd, addr, Messages.LST_NOK());
     } else {
         strcpy(buffer, getAuctionStates());
@@ -195,7 +197,7 @@ int show_asset_handler(int fd, struct sockaddr_in addr,  char *buffer){
     if (sscanf(buffer, "%*s %s", AID) != 1) {
         send_reply(fd, addr, Messages.SAS_ERR());
     }
-    else if (is_valid_aid(AID) == 0) {
+    else if (is_valid_aid(AID) == 1) {
         send_reply(fd, addr, Messages.SAS_ERR());
     }
     else if (!is_auction(AID)) {
@@ -218,14 +220,15 @@ int show_asset_handler(int fd, struct sockaddr_in addr,  char *buffer){
         fseek(asset_file, 0, SEEK_END);
         asset_size_int = ftell(asset_file);
         rewind(asset_file);
-        printf("%s %d\n",asset_name, asset_size_int);
+        
         sprintf(message, "%s %d ",asset_name, asset_size_int);
-        printf("%s\n",message);
+        
         send_reply(fd, addr, Messages.SAS_OK(message));
         sendfile(fd, fileno(asset_file), NULL, asset_size_int);
+        fclose(asset_file);
     }
     return 0;
-    }  
+}    
 
 int bid_handler(int fd, struct sockaddr_in addr,  char *buffer){
     char UID[7];
@@ -237,7 +240,6 @@ int bid_handler(int fd, struct sockaddr_in addr,  char *buffer){
         send_reply(fd, addr, Messages.BID_ERR());
     }
     else if (is_valid_uid(UID) == 1 || is_valid_password(password) == 1 || is_valid_aid(AID) == 1) {
-        printf("1\n");
         send_reply(fd, addr, Messages.BID_ERR());
     }
     else if(!is_auction(AID) || is_auction_finished(AID)){
@@ -262,6 +264,19 @@ int bid_handler(int fd, struct sockaddr_in addr,  char *buffer){
 
 
 int show_record_handler(int fd, struct sockaddr_in addr,  char *buffer){
+    char AID[4];
+    
+    if (sscanf(buffer, "%*s %s", AID) != 1) {
+            send_reply(fd, addr, Messages.SRC_ERR());
+    } else if(is_valid_aid(AID) == 1){
+        send_reply(fd, addr, Messages.SRC_ERR());
+    } else if(!is_auction(AID)){
+        send_reply(fd, addr, Messages.SRC_NOK());
+    } else {
+        is_auction_finished(AID);
+        //do_show_record(AID);
+    }
+
     return 0;
     }
 

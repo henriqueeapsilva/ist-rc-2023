@@ -45,6 +45,6 @@ void make_bid(char *UID, char *AID, int bid);
 
 void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_fname, int start_value, int timeactive, int fsize);
 
-void send_file_asset(char *AID);
+char *getNextAID();
 
-char *generate_random_number();
+char *do_show_record(char *AID);

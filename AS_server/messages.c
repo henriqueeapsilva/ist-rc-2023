@@ -128,7 +128,7 @@ const char *CLS_END() {
 
 const char *SAS_OK(char *buffer) {
     char *result = (char *)malloc(snprintf(NULL, 0, "RSA OK %s\n", buffer) + 1);
-    sprintf(result, "RSA OK %s\n", buffer);
+    sprintf(result, "RSA OK %s", buffer);
     return result;
 
 }

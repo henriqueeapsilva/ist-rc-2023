@@ -8,6 +8,7 @@
 
 typedef int (*CommandFunction)();
 
+
 // Command table entry
 typedef struct {
     const char *command;

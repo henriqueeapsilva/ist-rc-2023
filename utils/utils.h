@@ -30,6 +30,8 @@
 extern char *asip;
 extern char *asport;
 
+#define PATH_SIZE 6010
+
 int is_valid_uid(char *uid);
 int is_valid_password(const char *password);
 int is_valid_aid(char *aid);

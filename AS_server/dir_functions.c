@@ -5,7 +5,7 @@
 #include <string.h>
 #include <dirent.h>
 bool is_the_higher_bid(char *AID, int bid){
-    char BIDS_dir_path[50];
+    char BIDS_dir_path[PATH_SIZE];
     int highest_bid;
 
     sprintf(BIDS_dir_path, "%s/%s/BIDS" ,DIR_AUCTION, AID);
@@ -20,7 +20,7 @@ bool is_the_higher_bid(char *AID, int bid){
 }
 
 bool user_is_logged(char *UID){
-    char user_dir_name[50];
+    char user_dir_name[PATH_SIZE];
 
     sprintf(user_dir_name, "%s/%s/%s_login.txt" ,DIR_USER, UID, UID);
     if (access(user_dir_name, F_OK) != -1) {
@@ -30,7 +30,7 @@ bool user_is_logged(char *UID){
 }
 
 bool is_auction(char *AID){
-    char auction_dir_name[50];
+    char auction_dir_name[PATH_SIZE];
     sprintf(auction_dir_name, "%s/%s" ,DIR_AUCTION, AID);
     if (access(auction_dir_name, F_OK) != -1) {
         return true;
@@ -39,7 +39,7 @@ bool is_auction(char *AID){
 }
 
 bool check_user_auction(char *UID, char *AID){
-    char user_dir_auction[50];
+    char user_dir_auction[PATH_SIZE];
 
     sprintf(user_dir_auction, "%s/%s/%s/%s.txt" ,DIR_USER ,UID, "HOSTED", AID);
 
@@ -50,8 +50,8 @@ bool check_user_auction(char *UID, char *AID){
 }
 
 bool is_auction_finished(char *AID){
-    char auction_START_dir[50];
-    char auction_END_dir[50];
+    char auction_START_dir[PATH_SIZE];
+    char auction_END_dir[PATH_SIZE];
     time_t auction_time;
     time_t auction_duration;
     sprintf(auction_END_dir, "%s/%s/END_%s.txt" ,DIR_AUCTION, AID, AID);
@@ -77,19 +77,27 @@ int isDirectoryEmpty(char *path) {
     DIR *dir = opendir(path);
 
     if (dir == NULL) {
-        printf("opendir");
+        perror("opendir");
         exit(EXIT_FAILURE); // Error opening directory
     }
 
-    struct dirent *entry = readdir(dir);
+    struct dirent *entry;
+    int empty = 0; // Assume directory is empty
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type != DT_DIR || (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0)) {
+            empty = 1; // Directory is not empty
+            break;
+        }
+    }
 
     closedir(dir);
 
-    return entry == NULL; // Return 0 if entry is not NULL (directory is not empty), 1 otherwise
+    return empty;
 }
 
 int isAuctionsEmpty(){
-     char auctions_dir_name[50];
+     char auctions_dir_name[PATH_SIZE];
 
     sprintf(auctions_dir_name, "%s" ,DIR_AUCTION);
 
@@ -97,7 +105,7 @@ int isAuctionsEmpty(){
 }
 
 int isBiddedEmpty(char *UID){
-    char bidded_dir_name[50];
+    char bidded_dir_name[PATH_SIZE];
 
     sprintf(bidded_dir_name, "%s/%s/%s" ,DIR_USER, UID, "BIDDED");
 
@@ -105,7 +113,7 @@ int isBiddedEmpty(char *UID){
 }
 
 int isHostedEmpty(char *UID){
-    char bidded_dir_name[50];
+    char bidded_dir_name[PATH_SIZE];
 
     sprintf(bidded_dir_name, "%s/%s/%s" ,DIR_USER, UID, "HOSTED");
 
@@ -113,7 +121,7 @@ int isHostedEmpty(char *UID){
 }
 
 char* getAuctionStates() {
-    char auctions_dir_name[50];
+    char auctions_dir_name[PATH_SIZE];
 
     sprintf(auctions_dir_name, "%s" ,DIR_AUCTION);
 
@@ -168,7 +176,7 @@ char* getAuctionStates() {
 }
 
 char *getBidsUser(char *UID){
-    char bidded_dir_name[50];
+    char bidded_dir_name[PATH_SIZE];
     char AID[4];
 
     sprintf(bidded_dir_name, "%s/%s/%s" ,DIR_USER, UID, "BIDDED");
@@ -220,14 +228,65 @@ char *getBidsUser(char *UID){
             strcat(buffer, " 1 "); 
         }
     }
-    
+
     closedir(dir);
 
     return buffer;
 }
 
+
+
+
+char *getNextAID() {
+    char auc_dir_name[PATH_SIZE];
+    sprintf(auc_dir_name, "%s", DIR_AUCTION);
+    int curr_value, max_value = 0;
+
+    DIR *dir = opendir(auc_dir_name);
+
+    if (dir == NULL) {
+        perror("opendir");
+        exit(EXIT_FAILURE);
+    }
+
+    char *AID = (char *)malloc(4); // Assuming AID is a three-digit number
+    if (AID == NULL) {
+        closedir(dir);
+        perror("malloc");
+        free(AID);
+        exit(EXIT_FAILURE); // Error allocating memory
+    }
+
+
+    if (isDirectoryEmpty(auc_dir_name) == 0) {
+        sprintf(AID, "001");
+    } else {
+        struct dirent *entry;
+        while ((entry = readdir(dir)) != NULL) {
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+                continue;
+            }
+            sprintf(auc_dir_name, "%s/%s", DIR_AUCTION, entry->d_name);
+            if(strlen(entry->d_name) == 3 && is_directory(auc_dir_name)){
+                curr_value = atoi(entry->d_name);
+                if(curr_value > max_value) max_value = curr_value;
+            }
+        }
+    }
+
+    closedir(dir);
+    if(max_value < 999) {
+        max_value++;
+        snprintf(AID, 4,"%03d", max_value);
+    } else {
+        snprintf(AID, 4, "nok");
+    }
+    return AID;
+}
+
+
 char *getAuctionsUser(char *UID){
-    char bidded_dir_name[50];
+    char bidded_dir_name[PATH_SIZE];
     char AID[4];
 
     sprintf(bidded_dir_name, "%s/%s/%s" ,DIR_USER, UID, "HOSTED");
@@ -266,7 +325,6 @@ char *getAuctionsUser(char *UID){
         char filePath[1024];
         snprintf(filePath, sizeof(filePath), "%s/%s/END_%s.txt", DIR_AUCTION, AID, AID);
 
-        
 
         // Check if the END file exists
         FILE *endFile = fopen(filePath, "r");
@@ -281,14 +339,13 @@ char *getAuctionsUser(char *UID){
             strcat(buffer, " 1 "); 
         }
     }
-
     closedir(dir);
 
     return buffer;
 }
 
 bool user_is_registed(char *UID){
-    char user_dir_name[50];
+    char user_dir_name[PATH_SIZE];
 
     sprintf(user_dir_name, "%s/%s/%s_pass.txt" ,DIR_USER ,UID, UID);
     FILE *f_user = fopen(user_dir_name, "r");
@@ -298,7 +355,7 @@ bool user_is_registed(char *UID){
 }
 
 bool check_user_pass(char *UID, char *password){
-     char user_dir_name[50];
+     char user_dir_name[PATH_SIZE];
      char dir_password[9];
 
     sprintf(user_dir_name, "%s/%s/%s_pass.txt" ,DIR_USER ,UID, UID);
@@ -316,9 +373,9 @@ bool check_user_pass(char *UID, char *password){
 }
 
 void resgister_user(char *UID, char *password){
-    char user_dir_name[50];
-    char user_dir_pass[50];
-    char user_dir_login[50];
+    char user_dir_name[PATH_SIZE];
+    char user_dir_pass[PATH_SIZE];
+    char user_dir_login[PATH_SIZE];
     int ret;
 
 
@@ -367,7 +424,7 @@ void resgister_user(char *UID, char *password){
 }
 
 void log_client(char *UID){
-    char user_dir_name[50];
+    char user_dir_name[PATH_SIZE];
 
     sprintf(user_dir_name, "%s/%s/%s_login.txt" ,DIR_USER, UID, UID);
     FILE *f_user = fopen(user_dir_name, "w");
@@ -377,15 +434,15 @@ void log_client(char *UID){
 }
 
 void log_out_user(char *UID){
-    char user_dir_login[50];
+    char user_dir_login[PATH_SIZE];
 
     sprintf(user_dir_login, "%s/%s/%s_login.txt" ,DIR_USER, UID, UID);
     unlink(user_dir_login);
 }
 
 void unr_user(char *UID){
-    char user_dir_login[50];
-    char user_dir_pass[50];
+    char user_dir_login[PATH_SIZE];
+    char user_dir_pass[PATH_SIZE];
 
     sprintf(user_dir_login, "%s/%s/%s_login.txt" ,DIR_USER, UID, UID);
     sprintf(user_dir_pass, "%s/%s/%s_pass.txt" ,DIR_USER, UID, UID); 
@@ -398,8 +455,8 @@ void close_auction(char *AID){
     time_t current_time;
     time_t auction_time;
     char end_datetime[20];
-    char auction_START_dir[50];
-    char auction_END_dir[50];
+    char auction_START_dir[PATH_SIZE];
+    char auction_END_dir[PATH_SIZE];
 
 
     sprintf(auction_START_dir, "%s/%s/START_%s.txt" ,DIR_AUCTION, AID, AID);
@@ -433,20 +490,17 @@ void make_bid(char *UID, char *AID, int bid){
     fclose(user_bid_file);
     fclose(auction_bid_file);
 }
-void send_file_asset(char *AID){
-
-}
 
 
 void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_fname, int start_value, int timeactive, int fsize){
     char buffer[fsize];
-    char user_HOSTED_file[50];
-    char auction_dir_name[50];
-    char auction_START_dir[50];
-    char auction_ASSET_dir[50];
-    char auction_BIDS_dir[50];
-    char auction_BIDS_file[50];
-    char start_datetime[20];
+    char user_HOSTED_file[PATH_SIZE];
+    char auction_dir_name[PATH_SIZE];
+    char auction_START_dir[PATH_SIZE];
+    char auction_ASSET_dir[PATH_SIZE];
+    char auction_BIDS_dir[PATH_SIZE];
+    char auction_BIDS_file[PATH_SIZE];
+    char start_datetime[PATH_SIZE];
     time_t start_fulltime;
 
     // create auction folder
@@ -495,24 +549,18 @@ void register_auction(int tcp_fd,char *UID, char *AID, char *name, char *asset_f
     fclose(HOSTED_file);
 }
 
-char *generate_random_number() {
-    // Seed para a função rand() baseada no tempo atual
-    srand((unsigned int)time(NULL));
 
-    // Gerar um número aleatório de três dígitos
-    int random_number = rand() % 1000;
+/*char *do_show_record(char *AID){
+    char auc_dir_name[PATH_SIZE];
+    char bidded_dir_name[PATH_SIZE];
+    char end_file_name[PATH_SIZE];
+    char start_file_name[PATH_SIZE];
 
-    // Alocar espaço para a string (4 caracteres para os dígitos + 1 para o caractere nulo '\0')
-    char* result = (char*)malloc(4 * sizeof(char));
+    sprintf(auc_dir_name, "%s/%s" ,DIR_AUCTION , AID);
+    sprintf(bidded_dir_name, "%s/%s", auc_dir_name, "BIDS");
+    sprintf(start_file_name, "%s/START_%s.txt", auc_dir_name, AID);
+    sprintf(end_file_name, "%s/END_%s.txt", auc_dir_name, AID);
 
-    // Verificar se a alocação de memória foi bem-sucedida
-    if (result == NULL) {
-        perror("Erro ao alocar memória");
-        exit(EXIT_FAILURE);
-    }
 
-    // Converter o número inteiro para uma string
-    sprintf(result, "%03d", random_number);
 
-    return result;
-}
+}*/
