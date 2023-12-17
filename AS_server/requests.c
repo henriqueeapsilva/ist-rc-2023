@@ -274,7 +274,7 @@ int show_record_handler(int fd, struct sockaddr_in addr,  char *buffer){
         send_reply(fd, addr, Messages.SRC_NOK());
     } else {
         is_auction_finished(AID);
-        //do_show_record(AID);
+        send_reply(fd, addr, Messages.SRC_OK(do_show_record(AID)));
     }
 
     return 0;
