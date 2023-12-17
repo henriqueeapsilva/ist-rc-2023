@@ -35,6 +35,6 @@ extern char *asport;
 int is_valid_uid(char *uid);
 int is_valid_password(const char *password);
 int is_valid_aid(char *aid);
-
+int is_valid_bid(int bid);
 
 #endif

@@ -57,6 +57,11 @@ int open_(char *buffer){
         return 0;
     }
 
+    if (is_valid_bid(start_value) == 1) {
+        printf("Invalid start_value format\n");
+        return 0;
+    }
+
     FILE *file = fopen(asset_fname, "r");
     
     if (file == NULL) {
@@ -82,6 +87,10 @@ int close_(char *buffer){
 
     if (sscanf(buffer, "%*s %s", AID) != 1) {
         printf("Invalid input format\n");
+        return 0;
+    }
+    if (is_valid_aid(AID) == 1) {
+        printf("Invalid AID format\n");
         return 0;
     }
     sprintf(buffer, "CLS %s %s %s\n", client._UID, client._password, AID);
@@ -138,6 +147,10 @@ int show_asset(char *buffer){
         printf("Invalid input format\n");
         return 0;
     }
+    if (is_valid_aid(AID) == 1) {
+        printf("Invalid AID format\n");
+        return 0;
+    }
     sprintf(buffer, "SAS %s\n", AID);
     response = send_tcp_request(buffer,2);
     return response;
@@ -156,6 +169,10 @@ int bid(char *buffer){
         printf("Invalid input format\n");
         return 0;
     }
+    if (is_valid_bid(value) == 1){
+        printf("Invalid bid format\n");
+        return 0;
+    }
     sprintf(buffer, "BID %s %s %s %d\n", client._UID, client._password, AID, value);
 
     response = send_tcp_request(buffer,0);
@@ -172,6 +189,11 @@ int show_record(char *buffer) {
         printf("Invalid input format\n");
         return 0;
     }
+
+    if (is_valid_aid(AID) == 1) {
+        printf("Invalid AID format\n");
+        return 0;
+    }   
 
     // Create the protocol message
     sprintf(buffer, "SRC %s\n", AID);

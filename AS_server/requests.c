@@ -85,7 +85,7 @@ int open_handler(int fd, struct sockaddr_in addr,  char *buffer){
         send_reply(fd, addr, Messages.OPA_ERR());
         return 1;
     }
-    else if (is_valid_uid(UID) == 1 || is_valid_password(password) == 1) {
+    else if (is_valid_uid(UID) == 1 || is_valid_password(password) == 1 || is_valid_bid(start_value) == 1) {
         send_reply(fd, addr, Messages.OPA_ERR());
         return 1;
     }
@@ -239,7 +239,7 @@ int bid_handler(int fd, struct sockaddr_in addr,  char *buffer){
     if (sscanf(buffer, "%*s %s %s %s %d", UID, password, AID, &value) != 4) {
         send_reply(fd, addr, Messages.BID_ERR());
     }
-    else if (is_valid_uid(UID) == 1 || is_valid_password(password) == 1 || is_valid_aid(AID) == 1) {
+    else if (is_valid_uid(UID) == 1 || is_valid_password(password) == 1 || is_valid_aid(AID) == 1 || is_valid_bid(value) == 1) {
         send_reply(fd, addr, Messages.BID_ERR());
     }
     else if(!is_auction(AID) || is_auction_finished(AID)){
