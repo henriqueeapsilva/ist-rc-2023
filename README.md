@@ -1,10 +1,7 @@
-# Auctions
+# Computer Networks
 
-[PT]  
-Projeto desenvolvido no âmbito da cadeira Redes de Computadores (RC) do Instituto Superior Técnico (IST).
-O enunciado pode ser encontrado na diretoria raiz do repositório (statement.pdf).
-
-[EN]  
+## Project Specification
+ 
 Project developed within the scope of the Computer Networks course of Instituto Superior Tecnico (IST).
 The statement can be found in the root directory of this repository (statement.pdf).
 
@@ -13,20 +10,86 @@ The statement can be found in the root directory of this repository (statement.p
 > The development of the project requires implementing an Auction Server (AS) and a User Application (User).
 > The AS and multiple User application instances are intended to operate simultaneously on different machines connected to the Internet.
 
-### Commands
+## User Application
 
-- `login <uid> <password>`
-- `logout`
-- `unregister`
-- `exit`
-- `open <name> <fname> <start-value> <timeactive>`
-- `close <aid>`
-- `myauctions | ma`
-- `mybids | mb`
-- `list | l`
-- `show_asset <aid> | sa <aid>`
-- `bid <aid> <value> | b <aid> <value>`
-- `show_record <aid> | sr <aid>`
+The program implementing the users of the auction platform (User) is invoked using:
+`
+./user [-n ASIP] [-p ASport]
+`
+
+- ASIP: IP address of the machine where the auction server (AS) runs (optional).
+- ASport: Well-known port (TCP and UDP) where the AS accepts requests (optional, assumes the value 58000+GN if omitted).
+
+#### User Commands
+`
+login UID password:
+`
+- Sends a message to the AS, using UDP, to confirm the ID, UID, and password of the user. Displays the result: successful login, incorrect login attempt, or new user registered.
+
+`
+logout:
+`
+- Sends a message to the AS, using UDP, asking to logout the currently logged-in user. Displays the result: successful logout, unknown user, or user not logged in.
+
+`
+unregister:
+`
+- Sends a message to the AS, using UDP, asking to unregister the currently logged-in user. A logout operation is also performed. Displays the result: successful unregister, unknown user, or incorrect unregister attempt.
+
+`
+exit:
+`
+- Requests to exit the User application. If a user is still logged in, informs the user to first execute the logout command. Otherwise, terminates the application. Local command, not involving communication with the AS.
+
+`
+open name asset_fname start_value timeactive:
+`
+- Establishes a TCP session with the AS and sends a message asking to open a new auction. Displays the result and the assigned auction identifier (AID).
+
+`
+close AID:
+`
+- Sends a message to the AS, using TCP, asking to close an ongoing auction. Displays the result.
+
+`
+myauctions or ma:
+`
+- Sends a message to the AS, using UDP, asking for a list of auctions started by the logged-in user. Displays the result.
+
+`
+mybids or mb:
+`
+- Sends a message to the AS, using UDP, asking for a list of auctions for which the logged-in user has placed a bid. Displays the result.
+
+`
+list or l:
+`
+- Sends a message to the AS, using UDP, asking for a list of auctions. Displays the result.
+
+`
+show_asset AID or sa AID:
+`
+- Establishes a TCP session with the AS and sends a message asking to receive the image file of the asset in sale for auction number AID. Displays the result.
+
+`
+bid AID value or b AID value:
+`
+- Sends a message to the AS, using TCP, asking to place a bid for auction AID of value value. Displays the result.
+
+`
+show_record AID or sr AID:
+`
+- Sends a message to the AS, using UDP, asking to see the record of auction AID. Displays the result.
+
+### Auction Server
+
+The program implementing the Auction Server (AS) is invoked with the command:
+`
+./AS [-p ASport] [-v]
+`
+
+    ASport: Well-known port where the AS server accepts requests, both in UDP and TCP (optional, assumes the value 58000+GN if omitted).
+    If the -v option is set when invoking the program, it operates in verbose mode.
 
 ### Protocol (UDP Request) (Client-Server)
 
